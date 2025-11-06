@@ -84,7 +84,7 @@ const ListaBeneficiarios = () => {
           <DetalheItem label="Sexo" value={beneficiario.sexo} />
           <DetalheItem label="Raça" value={beneficiario.raca} />
           <DetalheItem label="Religião" value={beneficiario.religiao} />
-          <DetalheItem label="Fumante" value={beneficiario.fumante ? 'Sim' : 'Não'} />
+          <DetalheItem label="Fumante" value={beneficiario.fumante === 1 ? 'Sim' : 'Não'} />
           <DetalheItem label="Endereço" value={`${beneficiario.endereco || ''}, ${beneficiario.cidade || ''} - ${beneficiario.cep || ''}`} isFullWidth />
           <DetalheItem label="Email" value={beneficiario.email} isFullWidth />
         </div>
