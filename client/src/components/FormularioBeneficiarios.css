@@ -1,0 +1,82 @@
+/* Reset e contêiner */
+* { box-sizing: border-box; font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+.form-container { background: #fff; padding: 24px; border-radius: 12px; max-width: 1200px; margin: 24px auto; box-shadow: 0 6px 20px rgba(12, 23, 34, 0.06); }
+
+/* Título */
+.title { font-size: 1.25rem; font-weight: 700; color: #0f5132; margin-bottom: 12px; }
+
+/* Form layout */
+form { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+.form-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; width: 100%; }
+.form-field { display: flex; flex-direction: column; min-width: 160px; flex: 1; }
+.form-field label { margin-bottom: 6px; font-size: 0.9rem; color: #344054; font-weight: 600; }
+.form-field input, .form-field select, .form-field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #e6e9ef;
+  font-size: 0.95rem;
+  background: #ffffff;
+}
+
+/* Textarea */
+.form-field textarea { min-height: 88px; resize: vertical; }
+
+/* size helpers */
+.field-sm { flex: 0 0 180px; }
+.field-md { flex: 1 1 240px; }
+.field-lg { flex: 2 1 440px; }
+
+/* Section tables (Responsáveis / Família) */
+.section-table { margin-top: 18px; }
+.section-table h3 { margin-bottom: 8px; font-size: 1rem; color: #0f5132; font-weight: 700; }
+
+/* Header row - labels for columns */
+.table-header, .table-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+}
+.table-header { margin-bottom: 8px; padding: 6px 8px; border-radius: 8px; background: #fbfdfb; }
+/* header labels */
+.table-header .col-nome, .table-header .col-parentesco, .table-header .col-endereco, .table-header .col-fone, .table-header .col-acao {
+  font-weight: 700; font-size: 0.85rem; color: #334155;
+}
+
+/* column sizing */
+.col-nome { flex: 2; min-width: 180px; }
+.col-parentesco { flex: 1; min-width: 120px; }
+.col-endereco { flex: 2; min-width: 180px; }
+.col-fone { flex: 1; min-width: 120px; }
+.col-acao { width: 48px; display: flex; justify-content: center; align-items: center; }
+
+/* inputs/selects inside rows */
+.table-row input, .table-row select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #e6e9ef;
+  font-size: 0.9rem;
+}
+
+/* Buttons */
+.btn-add { margin-top: 8px; padding: 8px 12px; background: #16a34a; color: white; border-radius: 8px; border: none; cursor: pointer; }
+.btn-add:hover { background: #13823b; }
+
+.btn-delete { background: #ef4444; color: white; border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+.btn-delete:hover { background: #dc2626; }
+
+/* final action buttons */
+.form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; }
+.btn-save { background: #16a34a; color: #fff; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; }
+.btn-clear { background: #6b7280; color: #fff; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; }
+
+/* Responsividade */
+@media (max-width: 900px) {
+  .field-sm, .field-md, .field-lg { flex-basis: 100%; flex: 1 1 100%; min-width: 0; }
+  .col-nome, .col-parentesco, .col-endereco, .col-fone { min-width: 0; flex-basis: 100%; flex: 1 1 100%; }
+  .table-header { display: none; } /* opcional: esconde cabeçalho em mobile para economizar espaço */
+  .table-row { flex-direction: column; gap: 8px; padding: 8px 6px; border-radius: 8px; background: #fbfbfb; }
+  .col-acao { width: auto; display: flex; justify-content: flex-end; }
+}

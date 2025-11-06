@@ -1,0 +1,80 @@
+.cestas-container {
+    padding: 20px;
+    font-family: sans-serif;
+    max-width: 1000px;
+    margin: 20px auto;
+}
+
+.header-cestas {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.header-cestas h1 {
+    margin: 0;
+    color: #333;
+    font-size: 1.8rem;
+}
+
+.btn-registrar-entrega {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-registrar-entrega:hover {
+    background-color: #0056b3;
+}
+
+.estoque-card {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 40px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.estoque-card h2 {
+    margin-top: 0;
+    color: #495057;
+}
+
+.estoque-numero {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #28a745;
+    margin: 10px 0;
+}
+
+.historico-container {
+    margin-top: 20px;
+}
+
+.historico-container h2 {
+    margin-bottom: 15px;
+}
+
+.tabela-historico {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.tabela-historico th, .tabela-historico td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.tabela-historico thead tr {
+    background-color: #f4f4f4;
+}

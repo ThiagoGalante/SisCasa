@@ -1,0 +1,45 @@
+/* Estilo geral da barra de navegação */
+.menu-modulos {
+    background-color: #282c34; /* Cor de fundo escura */
+    padding: 0 20px;
+    font-family: sans-serif;
+}
+
+/* Remove marcadores da lista principal e zera margens/padding */
+.menu-modulos > ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex; /* Alinha os itens do menu horizontalmente */
+}
+
+/* Estilo dos itens principais do menu */
+.menu-modulos > ul > li {
+    position: relative; /* Essencial para posicionar o submenu */
+}
+
+.menu-modulos > ul > li > a {
+    display: block;
+    padding: 15px 20px;
+    color: white;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+
+.menu-modulos > ul > li:hover > a {
+    background-color: #4a515c; /* Cor ao passar o mouse */
+}
+
+/* Estilo do submenu */
+.submenu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    position: absolute; /* Posiciona o submenu em relação ao item pai */
+    top: 100%; /* Começa logo abaixo do item pai */
+    left: 0;
+    background-color: #3c424a;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    min-width: 200px; /* Largura mínima para o submenu */
+}
