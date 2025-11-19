@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
+import { useParams, useNavigate } from "react-router-dom"; // Importar hooks
 import "./FormularioBeneficiarios.css";
 
 const FormularioBeneficiarios = () => {
+  const { id } = useParams(); // Obter o ID da URL
+  const navigate = useNavigate(); // Hook para navegar
+  const isEditing = !!id; // Modo de edição se o ID existir
+
   const { register, handleSubmit, control, reset } = useForm({
     defaultValues: {
       responsaveis: [{ nome: "", parentesco: "", endereco: "", fone: "" }],
@@ -26,7 +31,7 @@ const FormularioBeneficiarios = () => {
   });
 
   useEffect(() => {
-    // Mantive fetchs por compatibilidade; se não usar API, pode remover
+    // Carrega as opções dos selects (cidades, raças, etc.)
     const carregarOpcoes = async () => {
       try {
         const [
@@ -57,27 +62,73 @@ const FormularioBeneficiarios = () => {
       }
     };
     carregarOpcoes();
-  }, []);
+
+    // Se estiver no modo de edição, busca os dados do beneficiário
+    if (isEditing) {
+      const fetchBeneficiario = async () => {
+        try {
+          const response = await fetch(`/api/beneficiarios/${id}`);
+          if (!response.ok) {
+            throw new Error("Beneficiário não encontrado");
+          }
+          const data = await response.json();
+          
+          // Formata as datas para o formato YYYY-MM-DD antes de popular o formulário
+          const formattedData = {
+            ...data,
+            data_cad: data.data_cad ? new Date(data.data_cad).toISOString().split('T')[0] : '',
+            data_nasc: data.data_nasc ? new Date(data.data_nasc).toISOString().split('T')[0] : '',
+          };
+
+          reset(formattedData); // Popula o formulário com os dados
+        } catch (error) {
+          console.error("Erro ao buscar beneficiário:", error);
+          alert("Falha ao carregar dados do beneficiário.");
+          navigate("/beneficiarios"); // Redireciona se não encontrar
+        }
+      };
+      fetchBeneficiario();
+    }
+  }, [id, isEditing, reset, navigate]);
 
   const onSubmit = async (data) => {
+    const url = isEditing ? `/api/beneficiarios/${id}` : "/api/beneficiarios";
+    const method = isEditing ? "PUT" : "POST";
+
     try {
-      const res = await fetch("/api/beneficiarios", {
-        method: "POST",
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("Erro ao salvar");
-      alert("Salvo com sucesso");
-      reset();
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Erro ao salvar");
+      }
+
+      alert(`Beneficiário ${isEditing ? 'atualizado' : 'salvo'} com sucesso!`);
+      
+      if (isEditing) {
+        navigate("/beneficiarios"); // Volta para a lista após editar
+      } else {
+        reset(); // Limpa o formulário após criar um novo
+      }
+
     } catch (err) {
-      console.warn(err);
-      alert("Falha ao salvar (veja console)");
+      console.error("Falha ao submeter o formulário:", err);
+      alert(`Falha ao salvar: ${err.message}`);
     }
   };
 
   return (
     <div className="form-container">
-      <h2 className="title">Cadastrar Beneficiário</h2>
+      <div className="form-header">
+        <button type="button" className="btn-back" onClick={() => navigate('/beneficiarios')}>
+          &larr; Voltar para a Lista
+        </button>
+      </div>
+      <h2 className="title">{isEditing ? "Editar Beneficiário" : "Cadastrar Beneficiário"}</h2>
 
       <form onSubmit={handleSubmit(onSubmit)}>
         {/* Linha 1: Nro, Data, Tipo */}
@@ -321,7 +372,7 @@ const FormularioBeneficiarios = () => {
             Limpar
           </button>
           <button type="submit" className="btn-save">
-            Salvar
+            {isEditing ? "Atualizar" : "Salvar"}
           </button>
         </div>
       </form>
