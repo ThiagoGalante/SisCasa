@@ -179,7 +179,7 @@ const FormularioBeneficiarios = () => {
         // Verifica se há pelo menos um responsável com nome preenchido
         const temResponsavelValido = data.responsaveis.some(resp => resp && resp.nome && resp.nome.trim() !== '');
         if (!temResponsavelValido) {
-          alert("Beneficiário é menor de idade. É obrigatório cadastrar pelo menos um responsável com nome preenchido.");
+          alert("Beneficiário é menor de idade. É obrigatório cadastrar pelo menos um responsável.");
           return; // Bloqueia o envio do formulário
         }
       }
