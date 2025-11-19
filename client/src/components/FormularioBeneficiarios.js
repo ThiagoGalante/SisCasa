@@ -138,6 +138,33 @@ const FormularioBeneficiarios = () => {
   }, [selectedUf, setValue, isEditing]);
 
   const onSubmit = async (data) => {
+    // Validação para Responsáveis e Composição Familiar
+    const validarPessoasRelacionadas = (pessoas, nomeSecao) => {
+      for (const pessoa of pessoas) {
+        // Verifica se a linha foi preenchida parcialmente
+        const isRowPartiallyFilled = Object.values(pessoa).some(value => value && String(value).trim() !== '');
+
+        if (isRowPartiallyFilled) {
+          const nomeValido = pessoa.nome && pessoa.nome.trim() !== '';
+          const parentescoValido = pessoa.parentesco && pessoa.parentesco.trim() !== '';
+
+          if (!nomeValido || !parentescoValido) {
+            alert(`Na seção '${nomeSecao}', todas as linhas preenchidas devem ter 'Nome' e 'Grau de Parentesco' definidos.`);
+            return false; // Indica falha na validação
+          }
+        }
+      }
+      return true; // Indica sucesso na validação
+    };
+
+    if (!validarPessoasRelacionadas(data.responsaveis, 'Responsáveis')) {
+      return; // Bloqueia o envio
+    }
+
+    if (!validarPessoasRelacionadas(data.familia, 'Composição Familiar')) {
+      return; // Bloqueia o envio
+    }
+
     // Validação para menor de idade
     if (data.data_nasc) {
       const hoje = new Date();
