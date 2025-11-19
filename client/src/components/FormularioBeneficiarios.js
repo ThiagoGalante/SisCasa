@@ -8,7 +8,7 @@ const FormularioBeneficiarios = () => {
   const navigate = useNavigate(); // Hook para navegar
   const isEditing = !!id; // Modo de edição se o ID existir
 
-  const { register, handleSubmit, control, reset, setValue, formState: { errors } } = useForm({
+  const { register, handleSubmit, control, reset, setValue, watch, formState: { errors } } = useForm({
     defaultValues: {
       responsaveis: [{ nome: "", parentesco: "", endereco: "", fone: "" }],
       familia: [{ nome: "", parentesco: "", endereco: "", fone: "" }],
@@ -21,14 +21,17 @@ const FormularioBeneficiarios = () => {
   const { fields: familiaFields, append: addFamilia, remove: removeFamilia } =
     useFieldArray({ control, name: "familia" });
 
+  const selectedUf = watch("uf"); // "Escuta" as mudanças no campo UF
+
   const [opcoes, setOpcoes] = useState({
     tiposBeneficio: [],
-    cidades: [],
+    ufs: [],
     racas: [],
     religioes: [],
     hospitais: [],
     grausParentesco: [],
   });
+  const [cidadesFiltradas, setCidadesFiltradas] = useState([]);
 
   useEffect(() => {
     // Carrega as opções dos selects (cidades, raças, etc.)
@@ -36,14 +39,14 @@ const FormularioBeneficiarios = () => {
       try {
         const [
           tiposBeneficioRes,
-          cidadesRes,
+          ufRes,
           racasRes,
           religioesRes,
           hospitaisRes,
           grausParentescoRes,
         ] = await Promise.all([
           fetch("/api/tipos-beneficio").catch(() => ({ json: async () => [] })),
-          fetch("/api/cidades").catch(() => ({ json: async () => [] })),
+          fetch("/api/ufs").catch(() => ({ json: async () => [] })),
           fetch("/api/racas").catch(() => ({ json: async () => [] })),
           fetch("/api/religioes").catch(() => ({ json: async () => [] })),
           fetch("/api/hospitais").catch(() => ({ json: async () => [] })),
@@ -51,7 +54,7 @@ const FormularioBeneficiarios = () => {
         ]);
         setOpcoes({
           tiposBeneficio: await tiposBeneficioRes.json(),
-          cidades: await cidadesRes.json(),
+          ufs: await ufRes.json(),
           racas: await racasRes.json(),
           religioes: await religioesRes.json(),
           hospitais: await hospitaisRes.json(),
@@ -80,6 +83,12 @@ const FormularioBeneficiarios = () => {
             data_nasc: data.data_nasc ? new Date(data.data_nasc).toISOString().split('T')[0] : '',
           };
 
+          // Se houver uma UF nos dados, busca as cidades correspondentes
+          if (formattedData.uf) {
+            const cidadesResponse = await fetch(`/api/cidades/${formattedData.uf}`);
+            setCidadesFiltradas(await cidadesResponse.json());
+          }
+
           reset(formattedData); // Popula o formulário com os dados
         } catch (error) {
           console.error("Erro ao buscar beneficiário:", error);
@@ -103,6 +112,30 @@ const FormularioBeneficiarios = () => {
       fetchProximoNroCadastro();
     }
   }, [id, isEditing, reset, navigate, setValue]);
+
+  // Efeito para buscar cidades quando a UF muda
+  useEffect(() => {
+    const fetchCidades = async () => {
+      if (selectedUf) {
+        try {
+          const response = await fetch(`/api/cidades/${selectedUf}`);
+          const data = await response.json();
+          setCidadesFiltradas(data);
+          // Limpa o campo cidade se a UF for alterada
+          if (!isEditing) { // Evita limpar ao carregar dados de edição
+            setValue('cidade', '');
+          }
+        } catch (error) {
+          console.error("Erro ao buscar cidades:", error);
+          setCidadesFiltradas([]);
+        }
+      } else {
+        // Se nenhuma UF for selecionada, limpa a lista de cidades
+        setCidadesFiltradas([]);
+      }
+    };
+    fetchCidades();
+  }, [selectedUf, setValue, isEditing]);
 
   const onSubmit = async (data) => {
     // Validação para menor de idade
@@ -166,7 +199,7 @@ const FormularioBeneficiarios = () => {
     <div className="form-container">
       <div className="form-header">
         <button type="button" className="btn-save" onClick={() => navigate('/beneficiarios')} style={{ marginRight: 'auto' }}>
-          &larr; Voltar para a Lista
+          &larr; Voltar
         </button>
       </div>
       <h2 className="title">{isEditing ? "Editar Beneficiário" : "Cadastrar Beneficiário"}</h2>
@@ -201,7 +234,7 @@ const FormularioBeneficiarios = () => {
         <div className="form-row">
           <div className="form-field field-lg">
             <label>Nome</label>
-            <input {...register("nome", { required: "O nome é obrigatório." })} />
+            <input {...register("nome", { required: "N  ome é obrigatório." })} />
             <ErrorMessage field="nome" />
           </div>
           <div className="form-field field-md">
@@ -215,18 +248,33 @@ const FormularioBeneficiarios = () => {
           </div>
         </div>
 
-        {/* Endereço | Cidade | CEP */}
+        {/* Endereço | UF | Cidade | CEP */}
         <div className="form-row">
           <div className="form-field field-lg">
             <label>Endereço</label>
             <input {...register("endereco")} />
           </div>
+          <div className="form-field field-sm">
+            <label>UF</label>
+            <select {...register("uf")}>
+              <option value="">Selecione a UF</option>
+              {opcoes.ufs.map((o) => (
+                <option key={o.nome} value={o.nome}>
+                  {o.nome}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="form-field field-md">
             <label>Cidade</label>
-            <select {...register("cidade")}>
-              <option value="">Selecione a cidade</option>
-              {opcoes.cidades.map((o) => (
-                <option key={o.nome} value={o.nome}>
+            <select 
+              {...register("cidade")} 
+              disabled={!selectedUf}
+              style={!selectedUf ? { backgroundColor: '#e9ecef', cursor: 'not-allowed' } : {}}
+            >
+              <option value="">{selectedUf ? 'Selecione a cidade' : 'Selecione a UF primeiro'}</option>
+              {cidadesFiltradas.map((o) => (
+                <option key={o.id} value={o.nome}>
                   {o.nome}
                 </option>
               ))}

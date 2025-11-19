@@ -38,11 +38,30 @@ const createLookupEndpoint = (path, tableName, idColumn, nameColumn) => {
 
 createLookupEndpoint('/api/tipos-beneficio', 'TIPO_BENEFICIO', 'COD_TIB', 'DESC_TIB');
 createLookupEndpoint('/api/cidades', 'MUNICIPIO', 'NOME_MUN', 'NOME_MUN'); // Nome é o próprio valor
+createLookupEndpoint('/api/ufs', 'UF', 'NOME_UF', 'NOME_UF'); // Nome é o próprio valor
 createLookupEndpoint('/api/racas', 'RACA', 'DESC_RAC', 'DESC_RAC'); // Nome é o próprio valor
 createLookupEndpoint('/api/religioes', 'RELIGIAO', 'DESC_REL', 'DESC_REL'); // Nome é o próprio valor
 createLookupEndpoint('/api/hospitais', 'HOSPITAL', 'NOME_HOS', 'NOME_HOS'); // Nome é o próprio valor
 createLookupEndpoint('/api/graus-parentesco', 'GRAU_PARENTESCO', 'DESC_GPA', 'DESC_GPA'); // Nome é o próprio valor
 
+// Endpoint para buscar cidades filtradas por UF
+app.get('/api/cidades/:uf', async (req, res) => {
+  const { uf } = req.params;
+  try {
+    const query = `
+      SELECT m.nome_mun as id, m.nome_mun as nome 
+      FROM MUNICIPIO m
+      JOIN UF u ON m.cod_uf = u.cod_uf
+      WHERE u.nome_uf ILIKE $1
+      ORDER BY m.nome_mun
+    `;
+    const { rows } = await pool.query(query, [uf]);
+    res.json(rows);
+  } catch (error) {
+    console.error(`Erro ao buscar cidades para a UF ${uf}:`, error);
+    res.status(500).json({ error: 'Erro ao buscar cidades.' });
+  }
+});
 // Endpoint para buscar o próximo número de cadastro
 app.get('/api/beneficiarios/proximo-nro-cadastro', async (req, res) => {
   try {
