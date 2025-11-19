@@ -8,7 +8,7 @@ const FormularioBeneficiarios = () => {
   const navigate = useNavigate(); // Hook para navegar
   const isEditing = !!id; // Modo de edição se o ID existir
 
-  const { register, handleSubmit, control, reset } = useForm({
+  const { register, handleSubmit, control, reset, setValue, formState: { errors } } = useForm({
     defaultValues: {
       responsaveis: [{ nome: "", parentesco: "", endereco: "", fone: "" }],
       familia: [{ nome: "", parentesco: "", endereco: "", fone: "" }],
@@ -88,10 +88,48 @@ const FormularioBeneficiarios = () => {
         }
       };
       fetchBeneficiario();
+    } else {
+      // Se for um novo cadastro, busca o próximo número de cadastro
+      const fetchProximoNroCadastro = async () => {
+        try {
+          const response = await fetch('/api/beneficiarios/proximo-nro-cadastro');
+          const data = await response.json();
+          // Usa o setValue para atualizar o campo do formulário
+          setValue('nro_cad', data.proximoNroCadastro);
+        } catch (error) {
+          console.error("Erro ao buscar próximo número de cadastro:", error);
+        }
+      };
+      fetchProximoNroCadastro();
     }
-  }, [id, isEditing, reset, navigate]);
+  }, [id, isEditing, reset, navigate, setValue]);
 
   const onSubmit = async (data) => {
+    // Validação para menor de idade
+    if (data.data_nasc) {
+      const hoje = new Date();
+      const nascimento = new Date(data.data_nasc);
+      let idade = hoje.getFullYear() - nascimento.getFullYear();
+      const mes = hoje.getMonth() - nascimento.getMonth();
+      if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
+        idade--;
+      }
+
+      if (idade < 18) {
+        // Verifica se há pelo menos um responsável com nome preenchido
+        const temResponsavelValido = data.responsaveis.some(resp => resp && resp.nome && resp.nome.trim() !== '');
+        if (!temResponsavelValido) {
+          alert("Beneficiário é menor de idade. É obrigatório cadastrar pelo menos um responsável com nome preenchido.");
+          return; // Bloqueia o envio do formulário
+        }
+      }
+    }
+
+    // Se houver erros de validação padrão, não prosseguir
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+
     const url = isEditing ? `/api/beneficiarios/${id}` : "/api/beneficiarios";
     const method = isEditing ? "PUT" : "POST";
 
@@ -121,10 +159,13 @@ const FormularioBeneficiarios = () => {
     }
   };
 
+  // Componente para exibir erros de validação
+  const ErrorMessage = ({ field }) => errors[field] && <span className="error-message">{errors[field].message}</span>;
+
   return (
     <div className="form-container">
       <div className="form-header">
-        <button type="button" className="btn-back" onClick={() => navigate('/beneficiarios')}>
+        <button type="button" className="btn-save" onClick={() => navigate('/beneficiarios')} style={{ marginRight: 'auto' }}>
           &larr; Voltar para a Lista
         </button>
       </div>
@@ -135,15 +176,16 @@ const FormularioBeneficiarios = () => {
         <div className="form-row">
           <div className="form-field field-md">
             <label>Nro. Cad.</label>
-            <input {...register("nro_cad")} />
+            <input {...register("nro_cad")} readOnly style={{ backgroundColor: '#e9ecef', cursor: 'not-allowed' }}/>
           </div>
           <div className="form-field field-md">
             <label>Data Cad.</label>
-            <input type="date" {...register("data_cad")} />
+            <input type="date" {...register("data_cad", { required: "Data de cadastro é obrigatória." })} />
+            <ErrorMessage field="data_cad" />
           </div>
           <div className="form-field field-md">
             <label>Tipo de Benefício</label>
-            <select {...register("tipo_beneficio")}>
+            <select {...register("tipo_beneficio", { required: "Selecione um tipo de benefício." })}>
               <option value="">Selecione o tipo</option>
               {opcoes.tiposBeneficio.map((o) => (
                 <option key={o.id ?? o.nome} value={o.id ?? o.nome}>
@@ -151,6 +193,7 @@ const FormularioBeneficiarios = () => {
                 </option>
               ))}
             </select>
+            <ErrorMessage field="tipo_beneficio" />
           </div>
         </div>
 
@@ -158,11 +201,13 @@ const FormularioBeneficiarios = () => {
         <div className="form-row">
           <div className="form-field field-lg">
             <label>Nome</label>
-            <input {...register("nome")} />
+            <input {...register("nome", { required: "O nome é obrigatório." })} />
+            <ErrorMessage field="nome" />
           </div>
           <div className="form-field field-md">
             <label>Data Nasc.</label>
-            <input type="date" {...register("data_nasc")} />
+            <input type="date" {...register("data_nasc", { required: "Data de nascimento é obrigatória." })} />
+            <ErrorMessage field="data_nasc" />
           </div>
           <div className="form-field field-md">
             <label>Email</label>
@@ -320,7 +365,7 @@ const FormularioBeneficiarios = () => {
           ))}
 
           <button type="button" className="btn-add" onClick={() => addResponsavel({ nome: "", parentesco: "", endereco: "", fone: "" })}>
-            Adicionar Responsável
+            + Adicionar Responsável
           </button>
         </div>
 
@@ -362,7 +407,7 @@ const FormularioBeneficiarios = () => {
           ))}
 
           <button type="button" className="btn-add" onClick={() => addFamilia({ nome: "", parentesco: "", endereco: "", fone: "" })}>
-            Adicionar Membro
+            + Adicionar Membro
           </button>
         </div>
 

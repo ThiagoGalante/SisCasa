@@ -43,6 +43,19 @@ createLookupEndpoint('/api/religioes', 'RELIGIAO', 'DESC_REL', 'DESC_REL'); // N
 createLookupEndpoint('/api/hospitais', 'HOSPITAL', 'NOME_HOS', 'NOME_HOS'); // Nome é o próprio valor
 createLookupEndpoint('/api/graus-parentesco', 'GRAU_PARENTESCO', 'DESC_GPA', 'DESC_GPA'); // Nome é o próprio valor
 
+// Endpoint para buscar o próximo número de cadastro
+app.get('/api/beneficiarios/proximo-nro-cadastro', async (req, res) => {
+  try {
+    // Busca o maior NUMCAD_PES existente na tabela de pessoas
+    const result = await pool.query('SELECT MAX(numcad_pes) as max_id FROM pessoas');
+    // Se não houver nenhum, começa em 1. Senão, incrementa o maior valor.
+    const proximoNro = (result.rows[0].max_id || 0) + 1;
+    res.json({ proximoNroCadastro: proximoNro });
+  } catch (error) {
+    console.error('Erro ao buscar o próximo número de cadastro:', error);
+    res.status(500).json({ error: 'Erro interno do servidor ao buscar próximo número de cadastro.' });
+  }
+});
 // --- Endpoints da API ---
 
 // Função auxiliar para buscar o ID de uma tabela de lookup.
@@ -103,7 +116,7 @@ app.post('/api/beneficiarios', async (req, res) => {
     const pessoaValues = [
       newNumCad, 'B', data_cad, nome, rg, cpf, sexo ? sexo.charAt(0) : null,
       data_nasc, endereco, cep, email, profissao, fone, 
-      patologia, mat_hospital, medicacao, fumante === 'sim' ? '1' : '0',
+      patologia, mat_hospital, medicacao, fumante === 'sim' ? 1 : 0,
       observacao, codRel, codRac, codMun, codHos
     ];
     await client.query(pessoaQuery, pessoaValues);
@@ -356,7 +369,7 @@ app.put('/api/beneficiarios/:id', async (req, res) => {
     const pessoaValues = [
       data_cad, nome, rg, cpf, sexo ? sexo.charAt(0) : null, data_nasc, endereco,
       cep, email, profissao, fone, patologia, mat_hospital, medicacao,
-      fumante === 'sim' ? '1' : '0', observacao, codRel, codRac, codMun, codHos, id
+      fumante === 'sim' ? 1 : 0, observacao, codRel, codRac, codMun, codHos, id
     ];
     await client.query(pessoaQuery, pessoaValues);
 
