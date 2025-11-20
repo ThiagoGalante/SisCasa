@@ -5,6 +5,9 @@
 /* Título */
 .title { font-size: 1.25rem; font-weight: 700; color: #0f5132; margin-bottom: 12px; }
 
+/* Cabeçalho do formulário com botão de voltar */
+.form-header { display: flex; justify-content: flex-start; margin-bottom: 16px; }
+
 /* Form layout */
 form { display: flex; flex-direction: column; gap: 12px; width: 100%; }
 .form-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; width: 100%; }
@@ -79,4 +82,11 @@ form { display: flex; flex-direction: column; gap: 12px; width: 100%; }
   .table-header { display: none; } /* opcional: esconde cabeçalho em mobile para economizar espaço */
   .table-row { flex-direction: column; gap: 8px; padding: 8px 6px; border-radius: 8px; background: #fbfbfb; }
   .col-acao { width: auto; display: flex; justify-content: flex-end; }
+}
+
+/* Mensagem de erro de validação */
+.error-message {
+  color: #dc3545; /* Vermelho para erros */
+  font-size: 0.8rem;
+  margin-top: 4px;
 }

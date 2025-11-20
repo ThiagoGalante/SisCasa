@@ -37,7 +37,13 @@ const ListaBeneficiarios = () => {
   );
 
   const toggleExpand = (id) => {
-    setExpandedId(expandedId === id ? null : id);
+    // Verifica se há texto selecionado na janela. Se houver, não expande.
+    if (window.getSelection().toString().length > 0) {
+      return;
+    }
+    setExpandedId((currentExpandedId) =>
+      currentExpandedId === id ? null : id
+    );
   };
 
   const DetalheItem = ({ label, value, isFullWidth = false }) => (
@@ -84,7 +90,7 @@ const ListaBeneficiarios = () => {
           <DetalheItem label="Sexo" value={beneficiario.sexo} />
           <DetalheItem label="Raça" value={beneficiario.raca} />
           <DetalheItem label="Religião" value={beneficiario.religiao} />
-          <DetalheItem label="Fumante" value={beneficiario.fumante === 1 ? 'Sim' : 'Não'} />
+          <DetalheItem label="Fumante" value={beneficiario.fumante === '1' ? 'Sim' : 'Não'} />
           <DetalheItem label="Endereço" value={`${beneficiario.endereco || ''}, ${beneficiario.cidade || ''} - ${beneficiario.cep || ''}`} isFullWidth />
           <DetalheItem label="Email" value={beneficiario.email} isFullWidth />
         </div>
@@ -150,19 +156,19 @@ const ListaBeneficiarios = () => {
         <tbody>
           {beneficiariosFiltrados.map((beneficiario) => (
             <Fragment key={beneficiario.id}>
-              <tr>
+              <tr onClick={() => toggleExpand(beneficiario.id)} style={{ cursor: 'pointer' }}>
                 <td>{beneficiario.numeroCadastro}</td>
                 <td>{beneficiario.nome}</td>
                 <td>{beneficiario.cpf}</td>
                 <td className="acoes">
-                  <button onClick={() => toggleExpand(beneficiario.id)} className="acao-expandir" title={expandedId === beneficiario.id ? 'Recolher' : 'Expandir'}>
+                  <button onClick={(e) => { e.stopPropagation(); toggleExpand(beneficiario.id); }} className="acao-expandir" title={expandedId === beneficiario.id ? 'Recolher' : 'Expandir'}>
                     {expandedId === beneficiario.id ? (
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
                     ) : (
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     )}
                   </button>
-                  <Link to={`/beneficiarios/editar/${beneficiario.id}`} className="acao-editar">
+                  <Link to={`/beneficiarios/editar/${beneficiario.id}`} className="acao-editar" onClick={(e) => e.stopPropagation()}>
                     ✏️
                   </Link>
                 </td>
