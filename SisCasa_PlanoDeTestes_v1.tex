@@ -1,0 +1,339 @@
+\documentclass[12pt]{article}
+
+\usepackage[brazilian]{babel}
+\usepackage{indentfirst}
+\usepackage{setspace}
+\usepackage{graphicx} % Required for inserting images
+\graphicspath{ {./Imagens/} }
+\usepackage{mathtools}
+\usepackage{hyperref}
+\usepackage{pdfpages}
+\usepackage[a4paper, left=3cm, right=2cm, top=2cm, bottom=1.95cm]{geometry}
+\usepackage{float}
+\usepackage{multirow}
+\usepackage[version=3]{mhchem}
+\usepackage{tikz}
+\usepackage{tkz-fct}
+\usepackage{verbatim}
+\usepackage{pgfplots}
+\usepackage{amsmath}
+\pgfplotsset{compat=1.18, width=0.75\linewidth}
+\usepackage{booktabs}
+\usepackage{circuitikz}
+\usepackage{siunitx}
+\usepackage{gensymb}
+\usepackage{caption}
+\usepackage{multirow}
+\usepackage{subcaption}
+\usepackage{placeins}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage{listings}
+\usetikzlibrary{calc}
+\usetikzlibrary{positioning}
+\usetikzlibrary{matrix}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=magenta,      
+    urlcolor=blue,
+    }
+    
+\urlstyle{same}
+
+\newcommand\Tau{\mathrm{T}}
+\newcommand\Epsilon{\mathcal{E}}
+\newcommand\minus{-}
+\newcommand{\olsi}[1]{\,\overline{\!{#1}}}
+
+\begin{document}
+\renewcommand{\arraystretch}{1.5}
+\setstretch{1.3}
+
+\thispagestyle{empty}
+\begin{figure}[h]
+\centering
+\includegraphics[width=6cm]{images/simbolo.png}
+\end{figure}
+\vspace{1cm}
+\begin{center}
+
+{\vspace{5px}}
+    {\bf \LARGE CSI-28 -- LAB 05}\\
+\end{center}
+\begin{center}
+    {\bf \LARGE Testes}\\[2cm]
+\end{center}
+\begin{center}  
+    {\large \bf Alunos}: \\[0.1cm]
+    {\large Daniel da Silva Sahadi\\Diogo Bueno Rodrigues\\Luiz Felipe de Brito Ramos\\Lucas Ribeiro do Rego Barros\\Thiago Galante Pereira}\\[1cm]
+    {\large \bf Turma: } \\[0.1cm]
+    {COMP 27}\\[1cm]
+    {\large \bf Professores: } \\[0.1cm]
+    {\large Karla Donato Fook \& Johnny Cardoso Marques}\\ [8cm]
+    {\bf Instituto Tecnológico de Aeronáutica - ITA }\\[1cm]
+\end{center}
+
+\newpage
+
+\tableofcontents
+\pagenumbering{Roman}
+\setcounter{page}{0}
+
+\newpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\newpage
+
+\section{Introdução}
+
+Este documento apresenta o Plano de Testes para o sistema SisCasa (Sistema Administrativo da Casa do Aconchego), definindo estratégias, técnicas, métodos e casos de teste. O escopo dos testes abrange funcionalidades implementadas, validação de integridade de dados, interface do usuário, integração entre componentes e requisitos não-funcionais básicos.
+
+\section{Níveis de Teste de Desenvolvimento}
+
+\subsection{Testes de Unidade}
+
+\textbf{Objetivo}: Validar componentes individuais isoladamente.
+
+\subsubsection{Backend}
+\begin{itemize}
+    \item Função \texttt{getLookupId}: busca de IDs, tratamento de nulos, valores não encontrados
+    \item Endpoint POST /api/beneficiarios: validação, geração de cadastro, inserções, transações
+    \item Endpoint GET /api/beneficiarios: consulta, formatação de dados relacionados
+    \item Endpoints de lookup: tipos-beneficio, cidades, racas, religioes, hospitais, graus-parentesco
+\end{itemize}
+
+\subsubsection{Frontend}
+\begin{itemize}
+    \item \textbf{FormularioBeneficiarios}: renderização, validação, adição/remoção de responsáveis e família, submissão
+    \item \textbf{ListaBeneficiarios}: renderização, busca, expansão de detalhes, filtros
+    \item \textbf{CestasBasicas}: exibição de estoque e histórico
+\end{itemize}
+
+\subsection{Testes de Integração}
+
+\textbf{Objetivo}: Validar comunicação entre componentes.
+
+\subsubsection{Backend-Banco de Dados}
+\begin{itemize}
+    \item Conexão e pool de conexões
+    \item Transações (cadastro completo, rollback, commit)
+    \item Consultas complexas (JOINs, agregações JSON)
+    \item Lookup de dados (busca de IDs, case-insensitive)
+\end{itemize}
+
+\subsubsection{Frontend-Backend}
+\begin{itemize}
+    \item Requisições HTTP (GET, POST), tratamento de erros
+    \item Formatação de dados (JSON)
+    \item Estados da aplicação (loading, error, success)
+\end{itemize}
+
+\subsection{Testes de Sistema}
+
+\textbf{Objetivo}: Validar comportamento completo do sistema.
+
+\textbf{Fluxos Principais}:
+\begin{enumerate}
+    \item Cadastro completo de beneficiário (end-to-end)
+    \item Consulta e visualização de beneficiários
+    \item Navegação no sistema
+\end{enumerate}
+
+\textbf{Requisitos Não-Funcionais}: Usabilidade, performance básica, segurança básica (validação de entrada, SQL Injection, CORS).
+
+\section{Técnicas de Teste}
+
+\subsection{Testes de Caixa Preta}
+
+Baseados em especificações funcionais, sem conhecimento da implementação.
+
+\textbf{Áreas de Aplicação}:
+\begin{itemize}
+    \item Validação de formulários (campos obrigatórios, formatos, valores válidos/inválidos)
+    \item Endpoints da API (requisições válidas/inválidas, códigos HTTP, estrutura JSON)
+    \item Fluxos de negócio (cadastro, busca, navegação)
+    \item Regras de negócio (geração de cadastro, relacionamentos, integridade referencial)
+\end{itemize}
+
+\textbf{Exemplos de Casos}:
+\begin{itemize}
+    \item CT-BP-001: Cadastro com dados válidos → HTTP 201
+    \item CT-BP-002: Cadastro sem campos obrigatórios → Erro de validação
+    \item CT-BP-003: CPF inválido → Erro ou formatação
+    \item CT-BP-004: Busca por nome → Lista filtrada
+\end{itemize}
+
+\subsection{Testes de Caixa Branca}
+
+Baseados na estrutura interna do código, visando cobertura de caminhos.
+
+\textbf{Áreas de Aplicação}:
+\begin{itemize}
+    \item Cobertura de código (funções, condições, loops, exceções)
+    \item Caminhos de execução (fluxo principal, alternativo, rollback)
+    \item Componentes React (renderização condicional, hooks, event handlers)
+\end{itemize}
+
+\textbf{Exemplos de Casos}:
+\begin{itemize}
+    \item CT-CB-001: Função getLookupId (valor encontrado, não encontrado, nulo, exceção GRAU\_PARENTESCO)
+    \item CT-CB-002: Transação (sucesso completo, erro em inserção de pessoa, beneficiário, responsável → rollback)
+    \item CT-CB-003: Componente React (renderização inicial, loading, sucesso, erro)
+\end{itemize}
+
+\section{Métodos de Teste}
+
+\subsection{Classes de Equivalência}
+
+Agrupamento de entradas em classes tratadas de forma similar.
+
+\textbf{Exemplo: Campo CPF}
+
+\begin{table}[h]
+\centering
+\caption{Classes de Equivalência - CPF}
+\small
+\begin{tabular}{|p{3cm}|p{5cm}|p{4cm}|}
+\hline
+\textbf{Classe} & \textbf{Descrição} & \textbf{Exemplos} \\
+\hline
+Válida & CPF com 11 dígitos & "12345678901", "111.222.333-44" \\
+\hline
+Inválida - Curto & Menos de 11 dígitos & "123", "123456" \\
+\hline
+Inválida - Longo & Mais de 11 dígitos & "123456789012345" \\
+\hline
+Inválida - Caracteres & Letras ou especiais & "abc12345678" \\
+\hline
+Inválida - Vazio & Campo vazio & "" \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Outros Campos}: Email (válido, sem @, sem domínio, vazio), Data (válida, futuro, formato incorreto, vazio), CEP (8 dígitos, curto, longo, caracteres).
+
+\subsection{Valores de Fronteira}
+
+Testes nos limites dos domínios de entrada.
+
+\textbf{Exemplo: Campo Nome}
+
+\begin{table}[H]
+\centering
+\caption{Valores de Fronteira - Nome}
+\small
+\begin{tabular}{|p{3cm}|p{5cm}|p{4cm}|}
+\hline
+\textbf{Teste} & \textbf{Valor} & \textbf{Resultado Esperado} \\
+\hline
+VF-Nome-001 & "" (vazio) & Erro: obrigatório \\
+\hline
+VF-Nome-002 & "A" (1 caractere) & Válido \\
+\hline
+VF-Nome-003 & 100 caracteres & Válido (limite) \\
+\hline
+VF-Nome-004 & 101 caracteres & Erro: excede limite \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Outros Exemplos}: Número de cadastro (1, 0, MAX\_INT), Lista de responsáveis (0, 1, múltiplos), Telefone (vazio, 10 dígitos, 11 dígitos, 50 caracteres, 51 caracteres).
+
+\section{Casos de Teste Detalhados}
+
+\subsection{Cadastro de Beneficiário}
+
+\textbf{CT-001: Cadastro Completo com Sucesso}
+\begin{itemize}
+    \item \textbf{Objetivo}: Validar cadastro completo com todos os dados
+    \item \textbf{Passos}: Acessar cadastro, preencher todos os campos (pessoais, documentos, saúde), adicionar responsável e membro da família, salvar
+    \item \textbf{Resultado Esperado}: Mensagem de sucesso, formulário resetado, dados salvos no BD, número de cadastro gerado, relacionamentos corretos
+\end{itemize}
+
+\textbf{CT-002: Cadastro sem Campos Obrigatórios}
+\begin{itemize}
+    \item \textbf{Objetivo}: Validar impedimento de cadastro sem campos obrigatórios
+    \item \textbf{Passos}: Deixar nome vazio, tentar salvar
+    \item \textbf{Resultado Esperado}: Erro de validação, cadastro não realizado
+\end{itemize}
+
+\textbf{CT-003: Cadastro com CPF Inválido}
+\begin{itemize}
+    \item \textbf{Objetivo}: Validar tratamento de CPF inválido
+    \item \textbf{Passos}: Preencher CPF com "123", tentar salvar
+    \item \textbf{Resultado Esperado}: Erro de validação ou formatação
+\end{itemize}
+
+\subsection{Listagem e Busca}
+
+\textbf{CT-004: Listagem de Beneficiários}
+\begin{itemize}
+    \item \textbf{Objetivo}: Validar exibição da lista completa
+    \item \textbf{Passos}: Acessar listagem, aguardar carregamento
+    \item \textbf{Resultado Esperado}: Lista exibida, ordenada por nome, colunas corretas, botões de ação visíveis
+\end{itemize}
+
+\textbf{CT-005: Busca por Nome}
+\begin{itemize}
+    \item \textbf{Objetivo}: Validar busca por nome
+    \item \textbf{Passos}: Digitar "João" no campo de busca
+    \item \textbf{Resultado Esperado}: Lista filtrada, case-insensitive, atualização em tempo real
+\end{itemize}
+
+\textbf{CT-006: Expansão de Detalhes}
+\begin{itemize}
+    \item \textbf{Objetivo}: Validar exibição de detalhes completos
+    \item \textbf{Passos}: Clicar no botão de expandir
+    \item \textbf{Resultado Esperado}: Detalhes exibidos (pessoais, documentos, saúde, responsáveis, família), botão muda para recolher
+\end{itemize}
+
+\subsection{Integração}
+
+\textbf{CT-007: Integridade Referencial}
+\begin{itemize}
+    \item \textbf{Objetivo}: Validar chaves estrangeiras
+    \item \textbf{Passos}: Cadastrar com cidade, raça, religião, hospital válidos, verificar no BD
+    \item \textbf{Resultado Esperado}: Códigos de referência corretos, JOINs funcionando, dados relacionados exibidos
+\end{itemize}
+
+\textbf{CT-008: Transação com Rollback}
+\begin{itemize}
+    \item \textbf{Objetivo}: Validar rollback em caso de erro
+    \item \textbf{Passos}: Simular erro durante inserção, verificar estado do BD
+    \item \textbf{Resultado Esperado}: Nenhum dado parcialmente inserido, transação revertida, mensagem de erro
+\end{itemize}
+
+\section{Estratégia de Execução e Ferramentas}
+
+\subsection{Ordem de Execução}
+\begin{enumerate}
+    \item Testes de Unidade (funções backend, componentes React)
+    \item Testes de Integração (Backend-BD, Frontend-Backend)
+    \item Testes de Sistema (fluxos completos)
+\end{enumerate}
+
+\subsection{Ferramentas}
+
+\textbf{Jest} - Framework principal para testes de unidade e integração:
+\begin{itemize}
+    \item \textbf{Backend}: Jest + Supertest (testes de API)
+    \item \textbf{Frontend}: Jest + React Testing Library (testes de componentes)
+    \item \textbf{Cobertura}: Istanbul/nyc integrado ao Jest
+\end{itemize}
+
+\textbf{Cypress} - Framework para testes end-to-end (opcional):
+\begin{itemize}
+    \item Testes de sistema completos
+    \item Testes de interface do usuário
+    \item Validação de fluxos funcionais
+\end{itemize}
+
+\end{document}
+
+
+
+\end{document}
+
