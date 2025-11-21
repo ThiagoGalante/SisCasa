@@ -1,12 +1,20 @@
 # SisCasa
 Sistema administrativo da Casa do Aconchego
 
-# Como rodar
+# Como rodar localmente
+
+## Servidor de Backend
 
 cd server
+
 npm install
+
 npm run dev
 
+## Servidor de Frontend
+
 cd client
+
 npm install
+
 npm start
