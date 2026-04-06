@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useParams, useNavigate } from "react-router-dom"; // Importar hooks
+import { authenticatedFetch } from "../utils/api";
 import "./FormularioBeneficiarios.css";
 
 const FormularioBeneficiarios = () => {
@@ -70,7 +71,7 @@ const FormularioBeneficiarios = () => {
     if (isEditing) {
       const fetchBeneficiario = async () => {
         try {
-          const response = await fetch(`/api/beneficiarios/${id}`);
+          const response = await authenticatedFetch(`/api/beneficiarios/${id}`);
           if (!response.ok) {
             throw new Error("Beneficiário não encontrado");
           }
@@ -101,7 +102,7 @@ const FormularioBeneficiarios = () => {
       // Se for um novo cadastro, busca o próximo número de cadastro
       const fetchProximoNroCadastro = async () => {
         try {
-          const response = await fetch('/api/beneficiarios/proximo-nro-cadastro');
+          const response = await authenticatedFetch('/api/beneficiarios/proximo-nro-cadastro');
           const data = await response.json();
           // Usa o setValue para atualizar o campo do formulário
           setValue('nro_cad', data.proximoNroCadastro);
@@ -194,9 +195,8 @@ const FormularioBeneficiarios = () => {
     const method = isEditing ? "PUT" : "POST";
 
     try {
-      const res = await fetch(url, {
+      const res = await authenticatedFetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 

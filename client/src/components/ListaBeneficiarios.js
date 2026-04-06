@@ -1,5 +1,6 @@
 import React, { useState, useEffect, Fragment } from "react";
 import { Link } from "react-router-dom";
+import { authenticatedFetch } from "../utils/api";
 import "./ListaBeneficiarios.css"; // Criaremos este CSS para estilizar a página
 
 const ListaBeneficiarios = () => {
@@ -12,7 +13,7 @@ const ListaBeneficiarios = () => {
   useEffect(() => {
     const fetchBeneficiarios = async () => {
       try {
-        const response = await fetch('/api/beneficiarios');
+        const response = await authenticatedFetch('/api/beneficiarios');
         if (!response.ok) {
           throw new Error('Erro ao buscar dados dos beneficiários.');
         }
