@@ -1,6 +1,9 @@
+require('dotenv').config();
 const express = require('express');
 const pool = require('./db');
 const cors = require('cors');
+const { authenticateToken } = require('./middleware/auth');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 const port = 5000; // Porta que o servidor irá escutar
@@ -10,6 +13,9 @@ const port = 5000; // Porta que o servidor irá escutar
 app.use(express.json());
 // Habilita o CORS para permitir requisições do seu frontend
 app.use(cors());
+
+// Rotas de autenticação
+app.use('/api/auth', authRoutes);
 
 console.log('Conectando ao banco de dados...');
 pool.connect((err) => {
@@ -62,8 +68,8 @@ app.get('/api/cidades/:uf', async (req, res) => {
     res.status(500).json({ error: 'Erro ao buscar cidades.' });
   }
 });
-// Endpoint para buscar o próximo número de cadastro
-app.get('/api/beneficiarios/proximo-nro-cadastro', async (req, res) => {
+// Endpoint para buscar o próximo número de cadastro (PROTEGIDO)
+app.get('/api/beneficiarios/proximo-nro-cadastro', authenticateToken, async (req, res) => {
   try {
     // Busca o maior NUMCAD_PES existente na tabela de pessoas
     const result = await pool.query('SELECT MAX(numcad_pes) as max_id FROM pessoas');
@@ -99,8 +105,9 @@ const getLookupId = async (client, tableName, columnName, value) => {
 /**
  * Endpoint para cadastrar um novo beneficiário.
  * Recebe os dados do formulário e insere no banco de dados usando uma transação.
+ * PROTEGIDO - Requer autenticação
  */
-app.post('/api/beneficiarios', async (req, res) => {
+app.post('/api/beneficiarios', authenticateToken, async (req, res) => {
   const {
     nro_cad, data_cad, nome, endereco, cidade, cep, email, data_nasc, sexo,
     raca, religiao, fumante, cpf, rg, hospital, mat_hospital, patologia, tipo_beneficio,
@@ -192,8 +199,8 @@ app.post('/api/beneficiarios', async (req, res) => {
   }
 });
 
-// Endpoint para listar todos os beneficiários
-app.get('/api/beneficiarios', async (req, res) => {
+// Endpoint para listar todos os beneficiários (PROTEGIDO)
+app.get('/api/beneficiarios', authenticateToken, async (req, res) => {
   try {
     const query = `
     SELECT
@@ -274,8 +281,8 @@ app.listen(port, () => {
   console.log(`Servidor rodando na porta ${port}`);
 });
 
-// Endpoint para buscar um único beneficiário pelo ID
-app.get('/api/beneficiarios/:id', async (req, res) => {
+// Endpoint para buscar um único beneficiário pelo ID (PROTEGIDO)
+app.get('/api/beneficiarios/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   try {
     const query = `
@@ -355,8 +362,8 @@ app.get('/api/beneficiarios/:id', async (req, res) => {
   }
 });
 
-// Endpoint para atualizar um beneficiário existente
-app.put('/api/beneficiarios/:id', async (req, res) => {
+// Endpoint para atualizar um beneficiário existente (PROTEGIDO)
+app.put('/api/beneficiarios/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   const {
     nro_cad, data_cad, nome, endereco, cidade, cep, email, data_nasc, sexo,
