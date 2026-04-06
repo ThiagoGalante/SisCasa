@@ -1,9 +1,11 @@
 import './App.css';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
 import Modulo from './components/Modulo';
-// Supondo que o seu formulário esteja neste caminho
-import FormularioBeneficiarios from './components/FormularioBeneficiarios'; 
+import Login from './components/Login';
+import FormularioBeneficiarios from './components/FormularioBeneficiarios';
 import ListaBeneficiarios from './components/ListaBeneficiarios';
 import CestasBasicas from './components/CestasBasicas';
 
@@ -12,22 +14,37 @@ const Home = () => <h1>Página Inicial</h1>;
 
 function App() {
   return (
-    <Router>
-      {/* O menu de módulos ficará visível em todas as páginas */}
-      <Modulo />
-
-      {/* As rotas definem qual componente renderizar com base na URL */}
-      <div className="container-conteudo">
+    <AuthProvider>
+      <Router>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/beneficiarios" element={<ListaBeneficiarios />} /> {/* Rota para a lista */}
-          <Route path="/beneficiarios/cadastro" element={<FormularioBeneficiarios />} />
-          <Route path="/cestas-basicas" element={<CestasBasicas />} />
-          {/* Rota para editar um beneficiário específico */}
-          <Route path="/beneficiarios/editar/:id" element={<FormularioBeneficiarios />} />
+          {/* Rota pública de login */}
+          <Route path="/login" element={<Login />} />
+
+          {/* Rotas protegidas */}
+          <Route
+            path="/*"
+            element={
+              <ProtectedRoute>
+                {/* O menu de módulos ficará visível em todas as páginas protegidas */}
+                <Modulo />
+
+                {/* As rotas definem qual componente renderizar com base na URL */}
+                <div className="container-conteudo">
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/beneficiarios" element={<ListaBeneficiarios />} />
+                    <Route path="/beneficiarios/cadastro" element={<FormularioBeneficiarios />} />
+                    <Route path="/cestas-basicas" element={<CestasBasicas />} />
+                    <Route path="/beneficiarios/editar/:id" element={<FormularioBeneficiarios />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </div>
+              </ProtectedRoute>
+            }
+          />
         </Routes>
-      </div>
-    </Router>
+      </Router>
+    </AuthProvider>
   );
 }
 
