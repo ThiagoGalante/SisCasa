@@ -43,3 +43,23 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     min-width: 200px; /* Largura mínima para o submenu */
 }
+
+/* Estilo do botão de logout */
+.logout-button {
+    display: block;
+    padding: 15px 20px;
+    background-color: transparent;
+    border: none;
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 14px;
+    font-family: sans-serif;
+    text-align: left;
+    width: 100%;
+}
+
+.logout-button:hover {
+    background-color: #4a515c;
+}

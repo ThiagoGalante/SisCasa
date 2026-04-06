@@ -1,8 +1,12 @@
 import React from "react";
 import "./Modulo.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 const Modulo = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
   const modulos = [
     {
       id: 1,
@@ -23,7 +27,7 @@ const Modulo = () => {
       id: 4,
       nome: "Cestas Basicas",
       link: "/cestas-basicas",
-    
+
     },
     {
       id: 5,
@@ -39,13 +43,13 @@ const Modulo = () => {
       id: 7,
       nome: "Relatórios",
       link: "/relatorios",
-    },
-    {
-      id: 8,
-      nome: "Sair",
-      link: "/sair",
     }
   ];
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login');
+  };
 
   return (
     <nav className="menu-modulos">
@@ -55,6 +59,11 @@ const Modulo = () => {
             <Link to={modulo.link}>{modulo.nome}</Link>
           </li>
         ))}
+        <li>
+          <button onClick={handleLogout} className="logout-button">
+            Sair ({user?.email})
+          </button>
+        </li>
       </ul>
     </nav>
   );
