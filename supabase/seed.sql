@@ -63,3 +63,26 @@ INSERT INTO GRAU_PARENTESCO (COD_GPA, DESC_GPA) VALUES
 (7, 'Tio(a)'),
 (8, 'Primo(a)'),
 (9, 'Outro');
+
+-- Populando a tabela ITENS_CESTA (itens base para cestas básicas).
+-- ON CONFLICT preserva itens já existentes e movimentações históricas em ESTOQUE_MOV.
+INSERT INTO ITENS_CESTA (COD_ITE, DESC_ITE, UNIDADE_ITE) VALUES
+(1, 'Arroz', 'kg'),
+(2, 'Feijão', 'kg'),
+(3, 'Açúcar', 'kg'),
+(4, 'Óleo', 'L'),
+(5, 'Sal', 'kg'),
+(6, 'Café', 'pacote'),
+(7, 'Macarrão', 'pacote'),
+(8, 'Farinha de Trigo', 'kg'),
+(9, 'Farinha de Mandioca', 'kg'),
+(10, 'Leite em Pó', 'pacote')
+ON CONFLICT (DESC_ITE) DO NOTHING;
+
+-- Sincroniza a sequence do SERIAL com o maior COD_ITE inserido manualmente.
+SELECT setval(pg_get_serial_sequence('ITENS_CESTA', 'cod_ite'), COALESCE((SELECT MAX(COD_ITE) FROM ITENS_CESTA), 1), true);
+
+-- Cria linhas iniciais de estoque (qtd 0) para cada item recém-cadastrado.
+INSERT INTO ESTOQUE_ITENS (COD_ITE, QTD_EST)
+SELECT COD_ITE, 0 FROM ITENS_CESTA
+ON CONFLICT (COD_ITE) DO NOTHING;
