@@ -8,6 +8,16 @@ const isLocalhost = Boolean(
 
 export function register(config) {
   if (process.env.NODE_ENV !== 'production' || !('serviceWorker' in navigator)) {
+    // Em dev, remove qualquer SW registrado por um build de produção anterior
+    // e limpa caches para evitar bundle cacheado servindo assets desatualizados.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((regs) => {
+        regs.forEach((reg) => reg.unregister());
+      });
+      if (typeof caches !== 'undefined') {
+        caches.keys().then((keys) => keys.forEach((k) => caches.delete(k)));
+      }
+    }
     return;
   }
 
