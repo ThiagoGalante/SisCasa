@@ -210,5 +210,436 @@ app.get('/api/beneficiarios', async (req, res) => {
   }
 });
 
+
+// --- Endpoints de Cestas Básicas (itens e estoque) ---
+
+app.get('/api/cestas/itens', async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT cod_ite     AS "id",
+             desc_ite    AS "descricao",
+             unidade_ite AS "unidade",
+             ativo_ite   AS "ativo"
+        FROM ITENS_CESTA
+       WHERE ativo_ite = true
+       ORDER BY desc_ite
+    `);
+    res.json(rows);
+  } catch (error) {
+    console.error('Erro ao buscar itens de cesta:', error);
+    res.status(500).json({ error: 'Erro interno do servidor ao buscar itens de cesta.', details: error.message });
+  }
+});
+
+app.get('/api/cestas/estoque', async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT i.cod_ite               AS "id",
+             i.desc_ite              AS "descricao",
+             i.unidade_ite           AS "unidade",
+             COALESCE(e.qtd_est, 0)  AS "qtdEst",
+             e.data_atualizacao      AS "ultimaAtualizacao"
+        FROM ITENS_CESTA i
+        LEFT JOIN ESTOQUE_ITENS e ON e.cod_ite = i.cod_ite
+       WHERE i.ativo_ite = true
+       ORDER BY i.desc_ite
+    `);
+    res.json(rows);
+  } catch (error) {
+    console.error('Erro ao buscar estoque de cestas:', error);
+    res.status(500).json({ error: 'Erro interno do servidor ao buscar estoque.', details: error.message });
+  }
+});
+
+app.post('/api/cestas/estoque/entrada', async (req, res) => {
+  const { itemId, quantidade, observacao } = req.body;
+
+  if (!Number.isInteger(itemId) || itemId <= 0) {
+    return res.status(400).json({ error: 'itemId deve ser um inteiro positivo.' });
+  }
+  if (!Number.isInteger(quantidade) || quantidade <= 0) {
+    return res.status(400).json({ error: 'quantidade deve ser um inteiro positivo.' });
+  }
+  if (observacao && typeof observacao === 'string' && observacao.length > 500) {
+    return res.status(400).json({ error: 'observacao deve ter no máximo 500 caracteres.' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const itemResult = await client.query(
+      'SELECT cod_ite FROM ITENS_CESTA WHERE cod_ite = $1 AND ativo_ite = true',
+      [itemId]
+    );
+    if (itemResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Item não encontrado ou inativo.' });
+    }
+
+    const estoqueResult = await client.query(`
+      INSERT INTO ESTOQUE_ITENS (cod_ite, qtd_est, data_atualizacao)
+           VALUES ($1, $2, CURRENT_TIMESTAMP)
+      ON CONFLICT (cod_ite) DO UPDATE
+         SET qtd_est = ESTOQUE_ITENS.qtd_est + EXCLUDED.qtd_est,
+             data_atualizacao = CURRENT_TIMESTAMP
+      RETURNING qtd_est
+    `, [itemId, quantidade]);
+
+    const movResult = await client.query(`
+      INSERT INTO ESTOQUE_MOV (cod_ite, qtd_mov, tipo_mov, obs_mov)
+           VALUES ($1, $2, 'E', $3)
+      RETURNING cod_mov
+    `, [itemId, quantidade, observacao || null]);
+
+    await client.query('COMMIT');
+    res.status(201).json({
+      message: 'Doação registrada com sucesso.',
+      codMov: movResult.rows[0].cod_mov,
+      qtdEstAtual: estoqueResult.rows[0].qtd_est
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Erro ao registrar entrada de estoque:', error);
+    res.status(500).json({ error: 'Erro interno do servidor ao registrar doação.', details: error.message });
+  } finally {
+    client.release();
+  }
+});
+
+
+// --- Endpoints de Cestas Básicas (CRUD de entregas) ---
+
+app.get('/api/cestas', async (req, res) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
+    const offset = (page - 1) * limit;
+    const beneficiario = req.query.beneficiario || null;
+    const dataInicio = req.query.dataInicio || null;
+    const dataFim = req.query.dataFim || null;
+
+    const filters = [];
+    const params = [];
+    let idx = 1;
+    if (beneficiario) {
+      filters.push(`p.nome_pes ILIKE $${idx++}`);
+      params.push(`%${beneficiario}%`);
+    }
+    if (dataInicio) {
+      filters.push(`c.dt_ces >= $${idx++}`);
+      params.push(dataInicio);
+    }
+    if (dataFim) {
+      filters.push(`c.dt_ces <= $${idx++}`);
+      params.push(dataFim);
+    }
+    const whereClause = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
+
+    const countResult = await pool.query(
+      `SELECT COUNT(*)::int AS total
+         FROM CESTAS c
+         JOIN PESSOAS p ON p.numcad_pes = c.numcad_ben
+         ${whereClause}`,
+      params
+    );
+    const total = countResult.rows[0].total;
+
+    const dataResult = await pool.query(
+      `SELECT c.cod_ces       AS "id",
+              c.numcad_ben    AS "beneficiarioId",
+              p.nome_pes      AS "beneficiarioNome",
+              c.dt_ces        AS "dtCes",
+              c.obs_ces       AS "obsCes",
+              c.data_criacao  AS "criadoEm",
+              c.data_atualizacao AS "atualizadoEm",
+              (SELECT COUNT(*)::int FROM CESTA_ITENS ci WHERE ci.cod_ces = c.cod_ces) AS "qtdTiposItens",
+              (SELECT COALESCE(SUM(ci.qtd), 0)::int FROM CESTA_ITENS ci WHERE ci.cod_ces = c.cod_ces) AS "qtdTotalItens"
+         FROM CESTAS c
+         JOIN PESSOAS p ON p.numcad_pes = c.numcad_ben
+         ${whereClause}
+         ORDER BY c.dt_ces DESC, c.cod_ces DESC
+         LIMIT $${idx++} OFFSET $${idx++}`,
+      [...params, limit, offset]
+    );
+
+    res.json({
+      data: dataResult.rows,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit)
+    });
+  } catch (error) {
+    console.error('Erro ao listar cestas:', error);
+    res.status(500).json({ error: 'Erro interno do servidor ao listar cestas.', details: error.message });
+  }
+});
+
+const validateCestaBody = (body) => {
+  const { numcadBen, dtCes, itens } = body;
+  if (!Number.isInteger(numcadBen) || numcadBen <= 0) {
+    return 'numcadBen deve ser um inteiro positivo.';
+  }
+  if (!dtCes || !/^\d{4}-\d{2}-\d{2}$/.test(dtCes)) {
+    return 'dtCes deve estar no formato YYYY-MM-DD.';
+  }
+  if (!Array.isArray(itens) || itens.length === 0) {
+    return 'itens deve ser um array não-vazio.';
+  }
+  for (const it of itens) {
+    if (!Number.isInteger(it.itemId) || it.itemId <= 0 ||
+        !Number.isInteger(it.quantidade) || it.quantidade <= 0) {
+      return 'cada item deve ter itemId e quantidade inteiros positivos.';
+    }
+  }
+  const itemIds = itens.map(it => it.itemId);
+  if (new Set(itemIds).size !== itemIds.length) {
+    return 'cada itemId pode aparecer apenas uma vez por cesta.';
+  }
+  return null;
+};
+
+app.post('/api/cestas', async (req, res) => {
+  const validationError = validateCestaBody(req.body);
+  if (validationError) return res.status(400).json({ error: validationError });
+
+  const { numcadBen, dtCes, obsCes, itens } = req.body;
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const benResult = await client.query(
+      `SELECT numcad_pes FROM PESSOAS WHERE numcad_pes = $1 AND tipo_pes = 'B'`,
+      [numcadBen]
+    );
+    if (benResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Beneficiário não encontrado.' });
+    }
+
+    for (const it of itens) {
+      const stockResult = await client.query(
+        `SELECT COALESCE(e.qtd_est, 0) AS qtd_est, i.ativo_ite
+           FROM ITENS_CESTA i
+           LEFT JOIN ESTOQUE_ITENS e ON e.cod_ite = i.cod_ite
+          WHERE i.cod_ite = $1`,
+        [it.itemId]
+      );
+      if (stockResult.rows.length === 0 || !stockResult.rows[0].ativo_ite) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ error: `Item ${it.itemId} não encontrado ou inativo.` });
+      }
+      if (stockResult.rows[0].qtd_est < it.quantidade) {
+        await client.query('ROLLBACK');
+        return res.status(409).json({
+          error: `Estoque insuficiente para item ${it.itemId}. Disponível: ${stockResult.rows[0].qtd_est}, solicitado: ${it.quantidade}.`
+        });
+      }
+    }
+
+    let cestaResult;
+    try {
+      cestaResult = await client.query(
+        `INSERT INTO CESTAS (numcad_ben, dt_ces, obs_ces)
+              VALUES ($1, $2, $3)
+              RETURNING cod_ces`,
+        [numcadBen, dtCes, obsCes || null]
+      );
+    } catch (err) {
+      if (err.code === '23505') {
+        await client.query('ROLLBACK');
+        return res.status(409).json({ error: 'Já existe uma entrega registrada para este beneficiário nesta data.' });
+      }
+      throw err;
+    }
+    const codCes = cestaResult.rows[0].cod_ces;
+
+    for (const it of itens) {
+      await client.query(
+        `INSERT INTO CESTA_ITENS (cod_ces, cod_ite, qtd) VALUES ($1, $2, $3)`,
+        [codCes, it.itemId, it.quantidade]
+      );
+      await client.query(
+        `UPDATE ESTOQUE_ITENS
+            SET qtd_est = qtd_est - $1, data_atualizacao = CURRENT_TIMESTAMP
+          WHERE cod_ite = $2`,
+        [it.quantidade, it.itemId]
+      );
+      await client.query(
+        `INSERT INTO ESTOQUE_MOV (cod_ite, qtd_mov, tipo_mov, cod_ces, obs_mov)
+              VALUES ($1, $2, 'S', $3, $4)`,
+        [it.itemId, it.quantidade, codCes, `Entrega cesta #${codCes}`]
+      );
+    }
+
+    await client.query('COMMIT');
+    res.status(201).json({ message: 'Entrega de cesta registrada com sucesso.', id: codCes });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Erro ao registrar entrega de cesta:', error);
+    res.status(500).json({ error: 'Erro interno do servidor ao registrar cesta.', details: error.message });
+  } finally {
+    client.release();
+  }
+});
+
+app.get('/api/cestas/:id', async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({ error: 'id inválido.' });
+  }
+  try {
+    const cestaResult = await pool.query(
+      `SELECT c.cod_ces       AS "id",
+              c.numcad_ben    AS "beneficiarioId",
+              p.nome_pes      AS "beneficiarioNome",
+              c.dt_ces        AS "dtCes",
+              c.obs_ces       AS "obsCes",
+              c.data_criacao  AS "criadoEm",
+              c.data_atualizacao AS "atualizadoEm"
+         FROM CESTAS c
+         JOIN PESSOAS p ON p.numcad_pes = c.numcad_ben
+        WHERE c.cod_ces = $1`,
+      [id]
+    );
+    if (cestaResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Cesta não encontrada.' });
+    }
+    const itensResult = await pool.query(
+      `SELECT ci.cod_ite     AS "itemId",
+              i.desc_ite     AS "descricao",
+              i.unidade_ite  AS "unidade",
+              ci.qtd         AS "quantidade"
+         FROM CESTA_ITENS ci
+         JOIN ITENS_CESTA i ON i.cod_ite = ci.cod_ite
+        WHERE ci.cod_ces = $1
+        ORDER BY i.desc_ite`,
+      [id]
+    );
+    res.json({ ...cestaResult.rows[0], itens: itensResult.rows });
+  } catch (error) {
+    console.error(`Erro ao buscar cesta ${id}:`, error);
+    res.status(500).json({ error: 'Erro interno do servidor.', details: error.message });
+  }
+});
+
+app.put('/api/cestas/:id', async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({ error: 'id inválido.' });
+  }
+
+  const validationError = validateCestaBody(req.body);
+  if (validationError) return res.status(400).json({ error: validationError });
+
+  const { numcadBen, dtCes, obsCes, itens } = req.body;
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const cestaResult = await client.query(
+      `SELECT cod_ces FROM CESTAS WHERE cod_ces = $1 FOR UPDATE`,
+      [id]
+    );
+    if (cestaResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Cesta não encontrada.' });
+    }
+
+    const benResult = await client.query(
+      `SELECT numcad_pes FROM PESSOAS WHERE numcad_pes = $1 AND tipo_pes = 'B'`,
+      [numcadBen]
+    );
+    if (benResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Beneficiário não encontrado.' });
+    }
+
+    const oldItensResult = await client.query(
+      `SELECT cod_ite, qtd FROM CESTA_ITENS WHERE cod_ces = $1`,
+      [id]
+    );
+    for (const old of oldItensResult.rows) {
+      await client.query(
+        `UPDATE ESTOQUE_ITENS
+            SET qtd_est = qtd_est + $1, data_atualizacao = CURRENT_TIMESTAMP
+          WHERE cod_ite = $2`,
+        [old.qtd, old.cod_ite]
+      );
+      await client.query(
+        `INSERT INTO ESTOQUE_MOV (cod_ite, qtd_mov, tipo_mov, cod_ces, obs_mov)
+              VALUES ($1, $2, 'E', $3, $4)`,
+        [old.cod_ite, old.qtd, id, `Estorno por edição da cesta #${id}`]
+      );
+    }
+    await client.query(`DELETE FROM CESTA_ITENS WHERE cod_ces = $1`, [id]);
+
+    for (const it of itens) {
+      const stockResult = await client.query(
+        `SELECT COALESCE(e.qtd_est, 0) AS qtd_est, i.ativo_ite
+           FROM ITENS_CESTA i
+           LEFT JOIN ESTOQUE_ITENS e ON e.cod_ite = i.cod_ite
+          WHERE i.cod_ite = $1`,
+        [it.itemId]
+      );
+      if (stockResult.rows.length === 0 || !stockResult.rows[0].ativo_ite) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ error: `Item ${it.itemId} não encontrado ou inativo.` });
+      }
+      if (stockResult.rows[0].qtd_est < it.quantidade) {
+        await client.query('ROLLBACK');
+        return res.status(409).json({
+          error: `Estoque insuficiente para item ${it.itemId}. Disponível: ${stockResult.rows[0].qtd_est}, solicitado: ${it.quantidade}.`
+        });
+      }
+    }
+
+    try {
+      await client.query(
+        `UPDATE CESTAS
+            SET numcad_ben = $1, dt_ces = $2, obs_ces = $3, data_atualizacao = CURRENT_TIMESTAMP
+          WHERE cod_ces = $4`,
+        [numcadBen, dtCes, obsCes || null, id]
+      );
+    } catch (err) {
+      if (err.code === '23505') {
+        await client.query('ROLLBACK');
+        return res.status(409).json({ error: 'Já existe uma entrega registrada para este beneficiário nesta data.' });
+      }
+      throw err;
+    }
+
+    for (const it of itens) {
+      await client.query(
+        `INSERT INTO CESTA_ITENS (cod_ces, cod_ite, qtd) VALUES ($1, $2, $3)`,
+        [id, it.itemId, it.quantidade]
+      );
+      await client.query(
+        `UPDATE ESTOQUE_ITENS
+            SET qtd_est = qtd_est - $1, data_atualizacao = CURRENT_TIMESTAMP
+          WHERE cod_ite = $2`,
+        [it.quantidade, it.itemId]
+      );
+      await client.query(
+        `INSERT INTO ESTOQUE_MOV (cod_ite, qtd_mov, tipo_mov, cod_ces, obs_mov)
+              VALUES ($1, $2, 'S', $3, $4)`,
+        [it.itemId, it.quantidade, id, `Entrega cesta #${id} (após edição)`]
+      );
+    }
+
+    await client.query('COMMIT');
+    res.status(200).json({ message: 'Cesta atualizada com sucesso.', id });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error(`Erro ao atualizar cesta ${id}:`, error);
+    res.status(500).json({ error: 'Erro interno do servidor.', details: error.message });
+  } finally {
+    client.release();
+  }
+});
+
 module.exports = app;
 
