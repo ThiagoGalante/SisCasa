@@ -9,6 +9,8 @@ import Login from './components/Login';
 import FormularioBeneficiarios from './components/FormularioBeneficiarios';
 import ListaBeneficiarios from './components/ListaBeneficiarios';
 import CestasBasicas from './components/CestasBasicas';
+import RegistrarDoacao from './components/RegistrarDoacao';
+import FormularioCestaBasica from './components/FormularioCestaBasica';
 
 // Componentes de exemplo para as outras rotas
 const Home = () => <h1>Página Inicial</h1>;
@@ -37,6 +39,9 @@ function App() {
                       <Route path="/beneficiarios" element={<ListaBeneficiarios />} />
                       <Route path="/beneficiarios/cadastro" element={<FormularioBeneficiarios />} />
                       <Route path="/cestas-basicas" element={<CestasBasicas />} />
+                      <Route path="/cestas-basicas/doacao" element={<RegistrarDoacao />} />
+                      <Route path="/cestas-basicas/cadastro" element={<FormularioCestaBasica />} />
+                      <Route path="/cestas-basicas/editar/:id" element={<FormularioCestaBasica />} />
                       <Route path="/beneficiarios/editar/:id" element={<FormularioBeneficiarios />} />
                       <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>

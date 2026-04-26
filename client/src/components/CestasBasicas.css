@@ -1,7 +1,7 @@
 .cestas-container {
     padding: 20px;
     font-family: sans-serif;
-    max-width: 1000px;
+    max-width: 1100px;
     margin: 20px auto;
 }
 
@@ -9,7 +9,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .header-cestas h1 {
@@ -18,63 +20,185 @@
     font-size: 1.8rem;
 }
 
-.btn-registrar-entrega {
-    background-color: #007bff;
-    color: white;
-    padding: 10px 15px;
+.header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-primario,
+.btn-secundario,
+.btn-limpar {
+    padding: 10px 16px;
     border: none;
     border-radius: 5px;
     font-weight: bold;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color 0.2s;
+    font-size: 14px;
 }
 
-.btn-registrar-entrega:hover {
-    background-color: #0056b3;
+.btn-primario {
+    background-color: #007bff;
+    color: white;
 }
+.btn-primario:hover { background-color: #0056b3; }
 
+.btn-secundario {
+    background-color: #28a745;
+    color: white;
+}
+.btn-secundario:hover { background-color: #1e7e34; }
+
+.btn-limpar {
+    background-color: #6c757d;
+    color: white;
+}
+.btn-limpar:hover { background-color: #545b62; }
+
+/* Estoque */
 .estoque-card {
     background-color: #f8f9fa;
     border: 1px solid #dee2e6;
     border-radius: 8px;
     padding: 20px;
-    text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 32px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .estoque-card h2 {
     margin-top: 0;
+    margin-bottom: 12px;
+    color: #495057;
+    font-size: 1.2rem;
+}
+
+.tabela-estoque {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabela-estoque th,
+.tabela-estoque td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 14px;
+}
+
+.tabela-estoque thead {
+    background-color: #e9ecef;
+}
+
+.tabela-estoque .estoque-zerado td {
+    color: #999;
+    background-color: #fff5f5;
+}
+
+/* Histórico */
+.historico-container h2 {
+    margin: 0 0 16px;
+    font-size: 1.2rem;
+}
+
+.total-badge {
+    color: #6c757d;
+    font-weight: normal;
+    font-size: 0.9rem;
+}
+
+.filtros {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+}
+
+.filtros input[type="text"] {
+    padding: 8px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    flex: 1 1 200px;
+    min-width: 200px;
+}
+
+.filtros label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
     color: #495057;
 }
 
-.estoque-numero {
-    font-size: 3rem;
-    font-weight: bold;
-    color: #28a745;
-    margin: 10px 0;
-}
-
-.historico-container {
-    margin-top: 20px;
-}
-
-.historico-container h2 {
-    margin-bottom: 15px;
+.filtros input[type="date"] {
+    padding: 7px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
 }
 
 .tabela-historico {
     width: 100%;
     border-collapse: collapse;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    background: white;
 }
 
-.tabela-historico th, .tabela-historico td {
-    padding: 12px 15px;
+.tabela-historico th,
+.tabela-historico td {
+    padding: 12px 14px;
     text-align: left;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #e9ecef;
 }
 
-.tabela-historico thead tr {
+.tabela-historico thead {
     background-color: #f4f4f4;
+}
+
+.link-editar {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+}
+.link-editar:hover { text-decoration: underline; }
+
+.vazio {
+    color: #6c757d;
+    font-style: italic;
+    text-align: center;
+    padding: 32px;
+}
+
+.paginacao {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-top: 16px;
+    padding: 12px;
+}
+
+.paginacao button {
+    padding: 8px 14px;
+    border: 1px solid #ced4da;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.paginacao button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.paginacao button:not(:disabled):hover {
+    background: #f0f0f0;
+}
+
+.paginacao span {
+    font-size: 14px;
+    color: #495057;
 }
