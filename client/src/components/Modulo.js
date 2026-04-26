@@ -2,9 +2,11 @@ import React from "react";
 import "./Modulo.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { useInstallPrompt } from "../contexts/InstallPromptContext";
 
 const Modulo = () => {
   const { user, signOut } = useAuth();
+  const { canInstall, promptInstall } = useInstallPrompt();
   const navigate = useNavigate();
 
   const modulos = [
@@ -64,6 +66,13 @@ const Modulo = () => {
             Sair ({user?.email})
           </button>
         </li>
+        {canInstall && (
+          <li>
+            <button onClick={promptInstall} className="install-button">
+              Instalar app
+            </button>
+          </li>
+        )}
       </ul>
     </nav>
   );

@@ -63,3 +63,21 @@
 .logout-button:hover {
     background-color: #4a515c;
 }
+
+.install-button {
+    display: block;
+    padding: 15px 20px;
+    background-color: #1976d2;
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 14px;
+    font-family: sans-serif;
+    text-align: left;
+    width: 100%;
+}
+
+.install-button:hover {
+    background-color: #1565c0;
+}
