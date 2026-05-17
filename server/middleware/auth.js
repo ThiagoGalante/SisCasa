@@ -31,7 +31,7 @@ const authenticateToken = async (req, res, next) => {
     // Busca informações adicionais do usuário na tabela USUARIOS local
     try {
       const result = await pool.query(
-        'SELECT id_usuario, nome_completo, ativo FROM USUARIOS WHERE supabase_user_id = $1',
+        'SELECT id_usuario, nome_completo, ativo, cargo FROM USUARIOS WHERE supabase_user_id = $1',
         [user.id]
       );
 
@@ -39,6 +39,7 @@ const authenticateToken = async (req, res, next) => {
         req.user.internalId = result.rows[0].id_usuario;
         req.user.nomeCompleto = result.rows[0].nome_completo;
         req.user.ativo = result.rows[0].ativo;
+        req.user.cargo = result.rows[0].cargo;
 
         // Verifica se o usuário está ativo
         if (!req.user.ativo) {
@@ -58,4 +59,11 @@ const authenticateToken = async (req, res, next) => {
   }
 };
 
-module.exports = { authenticateToken };
+const requireAdmin = (req, res, next) => {
+  if (req.user?.cargo !== 'admin') {
+    return res.status(403).json({ error: 'Acesso restrito a administradores.' });
+  }
+  next();
+};
+
+module.exports = { authenticateToken, requireAdmin };

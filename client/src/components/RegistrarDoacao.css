@@ -1,25 +1,24 @@
 .doacao-container {
     padding: 20px;
-    font-family: sans-serif;
     max-width: 600px;
     margin: 20px auto;
 }
 
 .doacao-container h1 {
     margin: 0 0 8px;
-    color: #333;
+    color: var(--color-text-primary);
     font-size: 1.6rem;
 }
 
 .doacao-subtitle {
-    color: #6c757d;
+    color: var(--color-text-muted);
     font-size: 14px;
     margin-bottom: 24px;
 }
 
 .doacao-form {
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
+    background-color: var(--color-bg-light);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
@@ -34,7 +33,7 @@
 .form-group label {
     font-weight: 600;
     margin-bottom: 6px;
-    color: #495057;
+    color: var(--color-text-secondary);
     font-size: 14px;
 }
 
@@ -51,13 +50,13 @@
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-    border-color: #80bdff;
+    border-color: var(--color-focus-border);
     outline: none;
-    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.15);
+    box-shadow: 0 0 0 0.2rem var(--color-focus-ring);
 }
 
 .form-error {
-    color: #dc3545;
+    color: var(--color-danger);
     font-size: 13px;
     margin-top: 4px;
 }
@@ -81,16 +80,16 @@
 }
 
 .btn-cancelar {
-    background-color: #6c757d;
+    background-color: var(--color-text-muted);
     color: white;
 }
 .btn-cancelar:hover { background-color: #545b62; }
 
 .btn-salvar {
-    background-color: #28a745;
+    background-color: var(--color-primary);
     color: white;
 }
-.btn-salvar:hover:not(:disabled) { background-color: #1e7e34; }
+.btn-salvar:hover:not(:disabled) { background-color: var(--color-primary-hover); }
 
 .btn-salvar:disabled,
 .btn-cancelar:disabled {

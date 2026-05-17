@@ -37,8 +37,7 @@
   }
 }
 
-/* Estilo para o container principal do conteúdo */
 .container-conteudo {
   padding: 20px;
-  margin: 0 20px; /* Adiciona margens laterais de 20px */
+  margin: 0 20px;
 }

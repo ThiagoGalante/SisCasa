@@ -1,0 +1,3 @@
+ALTER TABLE USUARIOS
+  ADD COLUMN CARGO VARCHAR(20) NOT NULL DEFAULT 'voluntario'
+  CHECK (CARGO IN ('admin','voluntario'));

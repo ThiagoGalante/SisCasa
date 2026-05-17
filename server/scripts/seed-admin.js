@@ -59,14 +59,14 @@ async function main() {
   }
 
   const result = await pool.query(
-    `INSERT INTO USUARIOS (SUPABASE_USER_ID, EMAIL, NOME_COMPLETO, ATIVO)
-     VALUES ($1, $2, $3, TRUE)
-     ON CONFLICT (SUPABASE_USER_ID) DO NOTHING
+    `INSERT INTO USUARIOS (SUPABASE_USER_ID, EMAIL, NOME_COMPLETO, ATIVO, CARGO)
+     VALUES ($1, $2, $3, TRUE, 'admin')
+     ON CONFLICT (SUPABASE_USER_ID) DO UPDATE SET CARGO = 'admin'
      RETURNING ID_USUARIO`,
     [authUser.id, email, nome]
   );
   if (result.rowCount > 0) {
-    console.log(`[seed-admin] Inserted USUARIOS row id=${result.rows[0].id_usuario}`);
+    console.log(`[seed-admin] Upserted USUARIOS row id=${result.rows[0].id_usuario} with CARGO='admin'`);
   } else {
     console.log(`[seed-admin] USUARIOS row already exists for supabase_user_id=${authUser.id} — skipping insert`);
   }

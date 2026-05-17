@@ -1,16 +1,16 @@
-.cesta-form-container {
+.doacao-form-container {
     padding: 20px;
     max-width: 800px;
     margin: 20px auto;
 }
 
-.cesta-form-container h1 {
+.doacao-form-container h1 {
     margin: 0 0 20px;
     color: var(--color-text-primary);
     font-size: 1.6rem;
 }
 
-.cesta-form {
+.doacao-form {
     background-color: var(--color-bg-light);
     border: 1px solid var(--color-border);
     border-radius: 8px;
@@ -64,6 +64,155 @@
     color: var(--color-danger);
     font-size: 13px;
     margin-top: 4px;
+}
+
+.doador-section {
+    background: white;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    padding: 16px;
+    margin: 0 0 20px;
+}
+
+.doador-section-title {
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin: 0 0 12px;
+    font-size: 14px;
+}
+
+.autocomplete-wrapper {
+    position: relative;
+}
+
+.autocomplete-input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+    background: white;
+    box-sizing: border-box;
+}
+
+.autocomplete-input:focus {
+    border-color: var(--color-focus-border);
+    outline: none;
+    box-shadow: 0 0 0 0.2rem var(--color-focus-ring);
+}
+
+.autocomplete-dropdown {
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+    z-index: 100;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.autocomplete-item {
+    padding: 9px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-item:hover {
+    background-color: #e6f4f1;
+}
+
+.autocomplete-item-sub {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    margin-top: 2px;
+}
+
+.autocomplete-vazio {
+    padding: 9px 12px;
+    color: var(--color-text-muted);
+    font-size: 14px;
+    font-style: italic;
+}
+
+.doador-selecionado {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #e6f4f1;
+    border: 1px solid #99d5cb;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 14px;
+    color: var(--color-primary-dark);
+    margin-bottom: 10px;
+}
+
+.doador-selecionado span {
+    font-weight: 600;
+}
+
+.doador-selecionado-sub {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    font-weight: normal;
+}
+
+.btn-limpar-doador {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    font-size: 16px;
+    line-height: 1;
+    padding: 0 2px;
+    border-radius: 50%;
+}
+
+.btn-limpar-doador:hover {
+    color: var(--color-danger);
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.btn-novo-doador {
+    background: none;
+    border: 1px dashed var(--color-primary);
+    border-radius: 4px;
+    color: var(--color-primary);
+    cursor: pointer;
+    font-size: 13px;
+    padding: 6px 12px;
+    margin-top: 6px;
+    transition: background-color 0.15s;
+}
+
+.btn-novo-doador:hover {
+    background-color: #e6f4f1;
+}
+
+.btn-voltar-busca {
+    background: none;
+    border: 1px solid var(--color-text-muted);
+    border-radius: 4px;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-size: 13px;
+    padding: 6px 12px;
+    margin-bottom: 14px;
+    transition: background-color 0.15s;
+}
+
+.btn-voltar-busca:hover {
+    background-color: #f0f0f0;
 }
 
 .itens-fieldset {

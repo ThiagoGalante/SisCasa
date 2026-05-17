@@ -3,7 +3,7 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
   padding: 20px;
 }
 
@@ -30,7 +30,7 @@
 
 .login-box h1 {
   text-align: center;
-  color: #333;
+  color: var(--color-text-primary);
   margin-bottom: 10px;
   font-size: 26px;
   font-weight: 600;
@@ -38,7 +38,7 @@
 
 .login-box h2 {
   text-align: center;
-  color: #666;
+  color: var(--color-text-muted);
   margin-bottom: 30px;
   font-size: 16px;
   font-weight: 400;
@@ -51,7 +51,7 @@
 .form-group label {
   display: block;
   margin-bottom: 8px;
-  color: #333;
+  color: var(--color-text-primary);
   font-weight: 500;
   font-size: 14px;
 }
@@ -68,8 +68,8 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--color-focus-border);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
 .form-group input:disabled {
@@ -90,7 +90,7 @@
 button[type="submit"] {
   width: 100%;
   padding: 12px;
-  background: #667eea;
+  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: 5px;
@@ -101,7 +101,7 @@ button[type="submit"] {
 }
 
 button[type="submit"]:hover:not(:disabled) {
-  background: #5568d3;
+  background: var(--color-primary-hover);
   transform: translateY(-1px);
 }
 

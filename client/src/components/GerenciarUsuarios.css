@@ -1,0 +1,175 @@
+.usuarios-container {
+    padding: 20px;
+    max-width: 1100px;
+    margin: 20px auto;
+}
+
+.header-usuarios {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.header-usuarios h1 {
+    margin: 0;
+    color: var(--color-text-primary);
+    font-size: 1.8rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-primario,
+.btn-limpar {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 14px;
+}
+
+.btn-primario {
+    background-color: var(--color-primary);
+    color: white;
+}
+.btn-primario:hover { background-color: var(--color-primary-hover); }
+
+.btn-limpar {
+    background-color: var(--color-text-muted);
+    color: white;
+}
+.btn-limpar:hover { background-color: #545b62; }
+
+.filtros {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    padding: 12px;
+    background-color: var(--color-bg-light);
+    border-radius: 6px;
+}
+
+.filtros input[type="text"] {
+    padding: 8px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    flex: 1 1 200px;
+    min-width: 200px;
+    font-size: 14px;
+}
+
+.tabela-usuarios {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    background: white;
+}
+
+.tabela-usuarios th,
+.tabela-usuarios td {
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 14px;
+}
+
+.tabela-usuarios thead {
+    background-color: #f4f4f4;
+}
+
+.tabela-usuarios tbody tr:hover {
+    background-color: var(--color-bg-light);
+}
+
+.acoes-cel {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.btn-editar,
+.btn-desativar {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-editar {
+    background-color: var(--color-primary);
+    color: white;
+}
+.btn-editar:hover { background-color: var(--color-primary-hover); }
+
+.btn-desativar {
+    background-color: var(--color-warning);
+    color: #212529;
+}
+.btn-desativar:hover:not(:disabled) { background-color: #e0a800; }
+.btn-desativar:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.badge-ativo,
+.badge-inativo {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.badge-ativo {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.badge-inativo {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.badge-cargo {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.badge-cargo-admin {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+.badge-cargo-voluntario {
+    background-color: #e2e3e5;
+    color: #383d41;
+}
+
+.vazio {
+    color: var(--color-text-muted);
+    font-style: italic;
+    text-align: center;
+    padding: 32px;
+}
+
+.total-badge {
+    color: var(--color-text-muted);
+    font-weight: normal;
+    font-size: 0.9rem;
+}

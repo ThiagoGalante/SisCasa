@@ -2,8 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const pool = require('./db');
 const cors = require('cors');
-const { authenticateToken } = require('./middleware/auth');
+const { authenticateToken, requireAdmin } = require('./middleware/auth');
 const authRoutes = require('./routes/auth');
+const doacoesRoutes = require('./routes/doacoes');
 
 const app = express();
 const port = 5000; // Porta que o servidor irá escutar
@@ -16,6 +17,10 @@ app.use(cors());
 
 // Rotas de autenticação
 app.use('/api/auth', authRoutes);
+
+// Rotas de doações e doadores
+app.use('/api/doacoes', authenticateToken, doacoesRoutes);
+app.use('/api/doadores', authenticateToken, doacoesRoutes);
 
 console.log('Conectando ao banco de dados...');
 pool.connect((err) => {
@@ -107,7 +112,7 @@ const getLookupId = async (client, tableName, columnName, value) => {
  * Recebe os dados do formulário e insere no banco de dados usando uma transação.
  * PROTEGIDO - Requer autenticação
  */
-app.post('/api/beneficiarios', authenticateToken, async (req, res) => {
+app.post('/api/beneficiarios', authenticateToken, requireAdmin, async (req, res) => {
   const {
     nro_cad, data_cad, nome, endereco, cidade, cep, email, data_nasc, sexo,
     raca, religiao, fumante, cpf, rg, hospital, mat_hospital, patologia, tipo_beneficio,
@@ -363,7 +368,7 @@ app.get('/api/beneficiarios/:id', authenticateToken, async (req, res) => {
 });
 
 // Endpoint para atualizar um beneficiário existente (PROTEGIDO)
-app.put('/api/beneficiarios/:id', authenticateToken, async (req, res) => {
+app.put('/api/beneficiarios/:id', authenticateToken, requireAdmin, async (req, res) => {
   const { id } = req.params;
   const {
     nro_cad, data_cad, nome, endereco, cidade, cep, email, data_nasc, sexo,
