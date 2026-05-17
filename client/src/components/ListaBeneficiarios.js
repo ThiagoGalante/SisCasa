@@ -1,9 +1,11 @@
 import React, { useState, useEffect, Fragment } from "react";
 import { Link } from "react-router-dom";
 import { authenticatedFetch } from "../utils/api";
-import "./ListaBeneficiarios.css"; // Criaremos este CSS para estilizar a página
+import { useAuth } from "../contexts/AuthContext";
+import "./ListaBeneficiarios.css";
 
 const ListaBeneficiarios = () => {
+  const { cargo } = useAuth();
   const [beneficiarios, setBeneficiarios] = useState([]);
   const [termoBusca, setTermoBusca] = useState("");
   const [expandedId, setExpandedId] = useState(null);
@@ -29,7 +31,6 @@ const ListaBeneficiarios = () => {
     fetchBeneficiarios();
   }, []);
 
-  // Filtra os beneficiários com base no termo de busca
   const beneficiariosFiltrados = beneficiarios.filter(
     (b) =>
       (b.nome && b.nome.toLowerCase().includes(termoBusca.toLowerCase())) ||
@@ -38,7 +39,6 @@ const ListaBeneficiarios = () => {
   );
 
   const toggleExpand = (id) => {
-    // Verifica se há texto selecionado na janela. Se houver, não expande.
     if (window.getSelection().toString().length > 0) {
       return;
     }
@@ -127,9 +127,11 @@ const ListaBeneficiarios = () => {
     <div className="lista-beneficiarios-container">
       <div className="header-lista">
         <h1>Beneficiários</h1>
-        <Link to="/beneficiarios/cadastro" className="btn-adicionar">
-          + Adicionar Novo
-        </Link>
+        {cargo === 'admin' && (
+          <Link to="/beneficiarios/cadastro" className="btn-adicionar">
+            + Adicionar Novo
+          </Link>
+        )}
       </div>
 
       <div className="caixa-busca">
@@ -169,9 +171,11 @@ const ListaBeneficiarios = () => {
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     )}
                   </button>
-                  <Link to={`/beneficiarios/editar/${beneficiario.id}`} className="acao-editar" onClick={(e) => e.stopPropagation()}>
-                    ✏️
-                  </Link>
+                  {cargo === 'admin' && (
+                    <Link to={`/beneficiarios/editar/${beneficiario.id}`} className="acao-editar" onClick={(e) => e.stopPropagation()}>
+                      ✏️
+                    </Link>
+                  )}
                 </td>
               </tr>
               {expandedId === beneficiario.id && (

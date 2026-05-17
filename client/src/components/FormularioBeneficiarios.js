@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
-import { useParams, useNavigate } from "react-router-dom"; // Importar hooks
+import { useParams, useNavigate } from "react-router-dom";
 import { authenticatedFetch } from "../utils/api";
 import "./FormularioBeneficiarios.css";
 
 const FormularioBeneficiarios = () => {
-  const { id } = useParams(); // Obter o ID da URL
-  const navigate = useNavigate(); // Hook para navegar
-  const isEditing = !!id; // Modo de edição se o ID existir
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const isEditing = !!id;
 
   const { register, handleSubmit, control, reset, setValue, watch, formState: { errors } } = useForm({
     defaultValues: {
@@ -22,7 +22,7 @@ const FormularioBeneficiarios = () => {
   const { fields: familiaFields, append: addFamilia, remove: removeFamilia } =
     useFieldArray({ control, name: "familia" });
 
-  const selectedUf = watch("uf"); // "Escuta" as mudanças no campo UF
+  const selectedUf = watch("uf");
 
   const [opcoes, setOpcoes] = useState({
     tiposBeneficio: [],
@@ -35,7 +35,6 @@ const FormularioBeneficiarios = () => {
   const [cidadesFiltradas, setCidadesFiltradas] = useState([]);
 
   useEffect(() => {
-    // Carrega as opções dos selects (cidades, raças, etc.)
     const carregarOpcoes = async () => {
       try {
         const [
@@ -67,7 +66,6 @@ const FormularioBeneficiarios = () => {
     };
     carregarOpcoes();
 
-    // Se estiver no modo de edição, busca os dados do beneficiário
     if (isEditing) {
       const fetchBeneficiario = async () => {
         try {
@@ -76,35 +74,31 @@ const FormularioBeneficiarios = () => {
             throw new Error("Beneficiário não encontrado");
           }
           const data = await response.json();
-          
-          // Formata as datas para o formato YYYY-MM-DD antes de popular o formulário
+
           const formattedData = {
             ...data,
             data_cad: data.data_cad ? new Date(data.data_cad).toISOString().split('T')[0] : '',
             data_nasc: data.data_nasc ? new Date(data.data_nasc).toISOString().split('T')[0] : '',
           };
 
-          // Se houver uma UF nos dados, busca as cidades correspondentes
           if (formattedData.uf) {
             const cidadesResponse = await fetch(`/api/cidades/${formattedData.uf}`);
             setCidadesFiltradas(await cidadesResponse.json());
           }
 
-          reset(formattedData); // Popula o formulário com os dados
+          reset(formattedData);
         } catch (error) {
           console.error("Erro ao buscar beneficiário:", error);
           alert("Falha ao carregar dados do beneficiário.");
-          navigate("/beneficiarios"); // Redireciona se não encontrar
+          navigate("/beneficiarios");
         }
       };
       fetchBeneficiario();
     } else {
-      // Se for um novo cadastro, busca o próximo número de cadastro
       const fetchProximoNroCadastro = async () => {
         try {
           const response = await authenticatedFetch('/api/beneficiarios/proximo-nro-cadastro');
           const data = await response.json();
-          // Usa o setValue para atualizar o campo do formulário
           setValue('nro_cad', data.proximoNroCadastro);
         } catch (error) {
           console.error("Erro ao buscar próximo número de cadastro:", error);
@@ -114,7 +108,6 @@ const FormularioBeneficiarios = () => {
     }
   }, [id, isEditing, reset, navigate, setValue]);
 
-  // Efeito para buscar cidades quando a UF muda
   useEffect(() => {
     const fetchCidades = async () => {
       if (selectedUf) {
@@ -122,7 +115,6 @@ const FormularioBeneficiarios = () => {
           const response = await fetch(`/api/cidades/${selectedUf}`);
           const data = await response.json();
           setCidadesFiltradas(data);
-          // Limpa o campo cidade se a UF for alterada
           if (!isEditing) { // Evita limpar ao carregar dados de edição
             setValue('cidade', '');
           }
@@ -131,7 +123,6 @@ const FormularioBeneficiarios = () => {
           setCidadesFiltradas([]);
         }
       } else {
-        // Se nenhuma UF for selecionada, limpa a lista de cidades
         setCidadesFiltradas([]);
       }
     };
@@ -139,10 +130,8 @@ const FormularioBeneficiarios = () => {
   }, [selectedUf, setValue, isEditing]);
 
   const onSubmit = async (data) => {
-    // Validação para Responsáveis e Composição Familiar
     const validarPessoasRelacionadas = (pessoas, nomeSecao) => {
       for (const pessoa of pessoas) {
-        // Verifica se a linha foi preenchida parcialmente
         const isRowPartiallyFilled = Object.values(pessoa).some(value => value && String(value).trim() !== '');
 
         if (isRowPartiallyFilled) {
@@ -151,22 +140,21 @@ const FormularioBeneficiarios = () => {
 
           if (!nomeValido || !parentescoValido) {
             alert(`Na seção '${nomeSecao}', todas as linhas preenchidas devem ter 'Nome' e 'Grau de Parentesco' definidos.`);
-            return false; // Indica falha na validação
+            return false;
           }
         }
       }
-      return true; // Indica sucesso na validação
+      return true;
     };
 
     if (!validarPessoasRelacionadas(data.responsaveis, 'Responsáveis')) {
-      return; // Bloqueia o envio
+      return;
     }
 
     if (!validarPessoasRelacionadas(data.familia, 'Composição Familiar')) {
-      return; // Bloqueia o envio
+      return;
     }
 
-    // Validação para menor de idade
     if (data.data_nasc) {
       const hoje = new Date();
       const nascimento = new Date(data.data_nasc);
@@ -177,16 +165,14 @@ const FormularioBeneficiarios = () => {
       }
 
       if (idade < 18) {
-        // Verifica se há pelo menos um responsável com nome preenchido
         const temResponsavelValido = data.responsaveis.some(resp => resp && resp.nome && resp.nome.trim() !== '');
         if (!temResponsavelValido) {
           alert("Beneficiário é menor de idade. É obrigatório cadastrar pelo menos um responsável.");
-          return; // Bloqueia o envio do formulário
+          return;
         }
       }
     }
 
-    // Se houver erros de validação padrão, não prosseguir
     if (Object.keys(errors).length > 0) {
       return;
     }
@@ -206,11 +192,11 @@ const FormularioBeneficiarios = () => {
       }
 
       alert(`Beneficiário ${isEditing ? 'atualizado' : 'salvo'} com sucesso!`);
-      
+
       if (isEditing) {
-        navigate("/beneficiarios"); // Volta para a lista após editar
+        navigate("/beneficiarios");
       } else {
-        reset(); // Limpa o formulário após criar um novo
+        reset();
       }
 
     } catch (err) {
@@ -219,7 +205,6 @@ const FormularioBeneficiarios = () => {
     }
   };
 
-  // Componente para exibir erros de validação
   const ErrorMessage = ({ field }) => errors[field] && <span className="error-message">{errors[field].message}</span>;
 
   return (
@@ -232,7 +217,6 @@ const FormularioBeneficiarios = () => {
       <h2 className="title">{isEditing ? "Editar Beneficiário" : "Cadastrar Beneficiário"}</h2>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        {/* Linha 1: Nro, Data, Tipo */}
         <div className="form-row">
           <div className="form-field field-md">
             <label>Nro. Cad.</label>
@@ -257,7 +241,6 @@ const FormularioBeneficiarios = () => {
           </div>
         </div>
 
-        {/* Nome | Data de Nascimento | Email */}
         <div className="form-row">
           <div className="form-field field-lg">
             <label>Nome</label>
@@ -275,7 +258,6 @@ const FormularioBeneficiarios = () => {
           </div>
         </div>
 
-        {/* Endereço | UF | Cidade | CEP */}
         <div className="form-row">
           <div className="form-field field-lg">
             <label>Endereço</label>
@@ -294,8 +276,8 @@ const FormularioBeneficiarios = () => {
           </div>
           <div className="form-field field-md">
             <label>Cidade</label>
-            <select 
-              {...register("cidade")} 
+            <select
+              {...register("cidade")}
               disabled={!selectedUf}
               style={!selectedUf ? { backgroundColor: '#e9ecef', cursor: 'not-allowed' } : {}}
             >
@@ -313,7 +295,6 @@ const FormularioBeneficiarios = () => {
           </div>
         </div>
 
-        {/* Sexo | Raça | Religião | Fumante */}
         <div className="form-row">
           <div className="form-field field-md">
             <label>Sexo</label>
@@ -347,7 +328,6 @@ const FormularioBeneficiarios = () => {
           </div>
         </div>
 
-        {/* CPF | RG | Fone | Profissao*/}
         <div className="form-row">
           <div className="form-field field-md">
             <label>CPF</label>
@@ -360,14 +340,13 @@ const FormularioBeneficiarios = () => {
           <div className="form-field field-md">
             <label>Fone</label>
             <input {...register("fone")} />
-          </div>          
+          </div>
           <div className="form-field field-md">
             <label>Profissão</label>
             <input {...register("profissao")} />
           </div>
         </div>
 
-        {/* Hospital | Mat. Hospital */}
         <div className="form-row">
           <div className="form-field field-lg">
             <label>Hospital</label>
@@ -382,7 +361,6 @@ const FormularioBeneficiarios = () => {
           </div>
         </div>
 
-        {/* Patologia | Medicacao */}
         <div className="form-row">
           <div className="form-field field-lg">
             <label>Patologia</label>
@@ -394,7 +372,6 @@ const FormularioBeneficiarios = () => {
           </div>
         </div>
 
-        {/* Observação */}
         <div className="form-row">
           <div className="form-field field-lg">
             <label>Observação</label>
@@ -402,7 +379,6 @@ const FormularioBeneficiarios = () => {
           </div>
         </div>
 
-        {/* ===== Responsáveis (lista dinâmica, layout em grid flex) ===== */}
         <div className="section-table">
           <h3>Responsáveis</h3>
 
@@ -444,7 +420,6 @@ const FormularioBeneficiarios = () => {
           </button>
         </div>
 
-        {/* ===== Composição Familiar ===== */}
         <div className="section-table">
           <h3>Composição Familiar</h3>
 
@@ -486,7 +461,6 @@ const FormularioBeneficiarios = () => {
           </button>
         </div>
 
-        {/* Ações finais */}
         <div className="form-actions">
           <button type="button" className="btn-clear" onClick={() => reset()}>
             Limpar

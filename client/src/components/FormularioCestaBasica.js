@@ -87,7 +87,6 @@ const FormularioCestaBasica = () => {
   };
 
   const onSubmit = async (data) => {
-    // Validação adicional client-side: itens duplicados e qtd vs estoque
     const ids = data.itens.map((it) => parseInt(it.itemId, 10));
     if (new Set(ids).size !== ids.length) {
       alert('Cada item pode aparecer apenas uma vez por cesta.');

@@ -5,19 +5,12 @@ const getLookupId = require('./utils/getLookupId');
 
 const app = express();
 
-// --- Middlewares ---
-// Permite que o servidor receba JSON no corpo das requisições
 app.use(express.json());
-// Habilita o CORS para permitir requisições do seu frontend
 app.use(cors());
 
-// --- Endpoints de Lookup ---
-
-// Função genérica para criar endpoints de lookup
 const createLookupEndpoint = (path, tableName, idColumn, nameColumn) => {
   app.get(path, async (req, res) => {
     try {
-      // Usamos 'AS' para padronizar os nomes das colunas para o frontend
       const { rows } = await pool.query(`SELECT ${idColumn} as id, ${nameColumn} as nome FROM ${tableName} ORDER BY ${nameColumn}`);
       res.json(rows);
     } catch (error) {
@@ -28,18 +21,12 @@ const createLookupEndpoint = (path, tableName, idColumn, nameColumn) => {
 };
 
 createLookupEndpoint('/api/tipos-beneficio', 'TIPO_BENEFICIO', 'COD_TIB', 'DESC_TIB');
-createLookupEndpoint('/api/cidades', 'MUNICIPIO', 'NOME_MUN', 'NOME_MUN'); // Nome é o próprio valor
-createLookupEndpoint('/api/racas', 'RACA', 'DESC_RAC', 'DESC_RAC'); // Nome é o próprio valor
-createLookupEndpoint('/api/religioes', 'RELIGIAO', 'DESC_REL', 'DESC_REL'); // Nome é o próprio valor
-createLookupEndpoint('/api/hospitais', 'HOSPITAL', 'NOME_HOS', 'NOME_HOS'); // Nome é o próprio valor
-createLookupEndpoint('/api/graus-parentesco', 'GRAU_PARENTESCO', 'DESC_GPA', 'DESC_GPA'); // Nome é o próprio valor
+createLookupEndpoint('/api/cidades', 'MUNICIPIO', 'NOME_MUN', 'NOME_MUN');
+createLookupEndpoint('/api/racas', 'RACA', 'DESC_RAC', 'DESC_RAC');
+createLookupEndpoint('/api/religioes', 'RELIGIAO', 'DESC_REL', 'DESC_REL');
+createLookupEndpoint('/api/hospitais', 'HOSPITAL', 'NOME_HOS', 'NOME_HOS');
+createLookupEndpoint('/api/graus-parentesco', 'GRAU_PARENTESCO', 'DESC_GPA', 'DESC_GPA');
 
-// --- Endpoints da API ---
-
-/**
- * Endpoint para cadastrar um novo beneficiário.
- * Recebe os dados do formulário e insere no banco de dados usando uma transação.
- */
 app.post('/api/beneficiarios', async (req, res) => {
   const {
     nro_cad, data_cad, nome, endereco, cidade, cep, email, data_nasc, sexo,
@@ -50,10 +37,8 @@ app.post('/api/beneficiarios', async (req, res) => {
   const client = await pool.connect();
 
   try {
-    // Inicia a transação
     await client.query('BEGIN');
 
-    // 1. Buscar os IDs das tabelas de lookup
     const codRel = await getLookupId(client, 'RELIGIAO', 'DESC_REL', religiao);
     const codRac = await getLookupId(client, 'RACA', 'DESC_RAC', raca);
     const codMun = await getLookupId(client, 'MUNICIPIO', 'NOME_MUN', cidade);
@@ -63,7 +48,6 @@ app.post('/api/beneficiarios', async (req, res) => {
     const maxIdResult = await client.query('SELECT MAX(numcad_pes) as max_id FROM pessoas');
     const newNumCad = (maxIdResult.rows[0].max_id || 0) + 1;
 
-    // 3. Inserir na tabela 'PESSOAS'
     const pessoaQuery = `
       INSERT INTO PESSOAS (
         numcad_pes, tipo_pes, datacad_pes, nome_pes, rg_pes, cpf_pes, sexo_pes,
@@ -80,10 +64,8 @@ app.post('/api/beneficiarios', async (req, res) => {
     ];
     await client.query(pessoaQuery, pessoaValues);
 
-    // 4. Inserir na tabela 'BENEFICIARIOS' usando o tipo de benefício do formulário
     await client.query('INSERT INTO BENEFICIARIOS (cod_tib, numcad_pes) VALUES ($1, $2)', [tipo_beneficio, newNumCad]);
 
-    // Função para inserir pessoas (responsáveis/familiares) e retornar o ID
     const inserirPessoaRelacionada = async (pessoa, tipo) => {
       const maxIdResult = await client.query('SELECT MAX(numcad_pes) as max_id FROM pessoas');
       const newId = (maxIdResult.rows[0].max_id || 0) + 1;
@@ -92,11 +74,10 @@ app.post('/api/beneficiarios', async (req, res) => {
       return newId;
     };
 
-    // 5. Insere na tabela 'RESPONSAVEIS'
     if (responsaveis && responsaveis.length > 0) {
       for (const resp of responsaveis) {
         if (resp.nome || resp.parentesco || resp.endereco || resp.fone) {
-          const numcadRes = await inserirPessoaRelacionada(resp, 'R'); // 'R' para Responsável
+          const numcadRes = await inserirPessoaRelacionada(resp, 'R');
           const codGpa = await getLookupId(client, 'GRAU_PARENTESCO', 'DESC_GPA', resp.parentesco);
           if (codGpa) {
             await client.query('INSERT INTO RESPONSAVEIS (numcad_ben, numcad_res, cod_gpa) VALUES ($1, $2, $3)', [newNumCad, numcadRes, codGpa]);
@@ -105,11 +86,10 @@ app.post('/api/beneficiarios', async (req, res) => {
       }
     }
 
-    // 6. Insere na tabela 'COMPOSICAO_FAMILIAR'
     if (familia && familia.length > 0) {
       for (const membro of familia) {
         if (membro.nome || membro.parentesco || membro.endereco || membro.fone) {
-          const numcadFam = await inserirPessoaRelacionada(membro, 'F'); // 'F' para Familiar
+          const numcadFam = await inserirPessoaRelacionada(membro, 'F');
           const codGpa = await getLookupId(client, 'GRAU_PARENTESCO', 'DESC_GPA', membro.parentesco);
           if (codGpa) {
             await client.query('INSERT INTO COMPOSICAO_FAMILIAR (numcad_ben, numcad_fam, cod_gpa) VALUES ($1, $2, $3)', [newNumCad, numcadFam, codGpa]);
@@ -118,22 +98,18 @@ app.post('/api/beneficiarios', async (req, res) => {
       }
     }
 
-    // Finaliza a transação com sucesso
     await client.query('COMMIT');
     res.status(201).json({ message: 'Beneficiário cadastrado com sucesso!', id: newNumCad });
 
   } catch (error) {
-    // Desfaz a transação em caso de erro
     await client.query('ROLLBACK');
     console.error('Erro ao cadastrar beneficiário:', error);
     res.status(500).json({ error: 'Erro interno do servidor ao salvar os dados.', details: error.message });
   } finally {
-    // Libera a conexão com o banco de dados
     client.release();
   }
 });
 
-// Endpoint para listar todos os beneficiários
 app.get('/api/beneficiarios', async (req, res) => {
   try {
     const query = `
@@ -210,8 +186,6 @@ app.get('/api/beneficiarios', async (req, res) => {
   }
 });
 
-
-// --- Endpoints de Cestas Básicas (itens e estoque) ---
 
 app.get('/api/cestas/itens', async (req, res) => {
   try {
@@ -307,8 +281,6 @@ app.post('/api/cestas/estoque/entrada', async (req, res) => {
   }
 });
 
-
-// --- Endpoints de Cestas Básicas (CRUD de entregas) ---
 
 app.get('/api/cestas', async (req, res) => {
   try {

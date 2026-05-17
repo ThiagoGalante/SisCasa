@@ -11,9 +11,11 @@ import ListaBeneficiarios from './components/ListaBeneficiarios';
 import CestasBasicas from './components/CestasBasicas';
 import RegistrarDoacao from './components/RegistrarDoacao';
 import FormularioCestaBasica from './components/FormularioCestaBasica';
-
-// Componentes de exemplo para as outras rotas
-const Home = () => <h1>Página Inicial</h1>;
+import ListaDoacoes from './components/ListaDoacoes';
+import FormularioDoacao from './components/FormularioDoacao';
+import GerenciarUsuarios from './components/GerenciarUsuarios';
+import FormularioUsuario from './components/FormularioUsuario';
+import PaginaInicial from './components/PaginaInicial';
 
 function App() {
   return (
@@ -21,21 +23,17 @@ function App() {
       <InstallPromptProvider>
         <Router>
           <Routes>
-            {/* Rota pública de login */}
             <Route path="/login" element={<Login />} />
 
-            {/* Rotas protegidas */}
             <Route
               path="/*"
               element={
                 <ProtectedRoute>
-                  {/* O menu de módulos ficará visível em todas as páginas protegidas */}
                   <Modulo />
 
-                  {/* As rotas definem qual componente renderizar com base na URL */}
                   <div className="container-conteudo">
                     <Routes>
-                      <Route path="/" element={<Home />} />
+                      <Route path="/" element={<PaginaInicial />} />
                       <Route path="/beneficiarios" element={<ListaBeneficiarios />} />
                       <Route path="/beneficiarios/cadastro" element={<FormularioBeneficiarios />} />
                       <Route path="/cestas-basicas" element={<CestasBasicas />} />
@@ -43,6 +41,12 @@ function App() {
                       <Route path="/cestas-basicas/cadastro" element={<FormularioCestaBasica />} />
                       <Route path="/cestas-basicas/editar/:id" element={<FormularioCestaBasica />} />
                       <Route path="/beneficiarios/editar/:id" element={<FormularioBeneficiarios />} />
+                      <Route path="/doacoes" element={<ListaDoacoes />} />
+                      <Route path="/doacoes/cadastro" element={<FormularioDoacao />} />
+                      <Route path="/doacoes/editar/:id" element={<FormularioDoacao />} />
+                      <Route path="/usuarios" element={<GerenciarUsuarios />} />
+                      <Route path="/usuarios/cadastro" element={<FormularioUsuario />} />
+                      <Route path="/usuarios/editar/:id" element={<FormularioUsuario />} />
                       <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                   </div>
