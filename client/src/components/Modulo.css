@@ -1,21 +1,17 @@
-/* Estilo geral da barra de navegação */
 .menu-modulos {
-    background-color: #282c34; /* Cor de fundo escura */
+    background-color: var(--color-nav-bg);
     padding: 0 20px;
-    font-family: sans-serif;
 }
 
-/* Remove marcadores da lista principal e zera margens/padding */
 .menu-modulos > ul {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: flex; /* Alinha os itens do menu horizontalmente */
+    display: flex;
 }
 
-/* Estilo dos itens principais do menu */
 .menu-modulos > ul > li {
-    position: relative; /* Essencial para posicionar o submenu */
+    position: relative;
 }
 
 .menu-modulos > ul > li > a {
@@ -27,24 +23,22 @@
 }
 
 .menu-modulos > ul > li:hover > a {
-    background-color: #4a515c; /* Cor ao passar o mouse */
+    background-color: var(--color-nav-hover);
 }
 
-/* Estilo do submenu */
 .submenu {
     list-style: none;
     padding: 0;
     margin: 0;
-    position: absolute; /* Posiciona o submenu em relação ao item pai */
-    top: 100%; /* Começa logo abaixo do item pai */
+    position: absolute;
+    top: 100%;
     left: 0;
-    background-color: #3c424a;
+    background-color: var(--color-nav-sub);
     border-radius: 0 0 4px 4px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    min-width: 200px; /* Largura mínima para o submenu */
+    min-width: 200px;
 }
 
-/* Estilo do botão de logout */
 .logout-button {
     display: block;
     padding: 15px 20px;
@@ -55,29 +49,29 @@
     cursor: pointer;
     transition: background-color 0.3s;
     font-size: 14px;
-    font-family: sans-serif;
+    font-family: inherit;
     text-align: left;
     width: 100%;
 }
 
 .logout-button:hover {
-    background-color: #4a515c;
+    background-color: var(--color-nav-hover);
 }
 
 .install-button {
     display: block;
     padding: 15px 20px;
-    background-color: #1976d2;
+    background-color: var(--color-primary);
     border: none;
     color: white;
     cursor: pointer;
     transition: background-color 0.3s;
     font-size: 14px;
-    font-family: sans-serif;
+    font-family: inherit;
     text-align: left;
     width: 100%;
 }
 
 .install-button:hover {
-    background-color: #1565c0;
+    background-color: var(--color-primary-hover);
 }

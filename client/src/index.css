@@ -1,8 +1,46 @@
+:root {
+  /* Brand — Casa do Aconchego */
+  --color-primary:        #008871;
+  --color-primary-dark:   #004539;
+  --color-primary-hover:  #006655;
+
+  /* Accents */
+  --color-secondary:      #ff5d5d;
+  --color-accent-yellow:  #fac915;
+  --color-accent-orange:  #ed9d4e;
+
+  /* Semantic */
+  --color-success:        #28a745;
+  --color-success-dark:   #1e7e34;
+  --color-danger:         #dc3545;
+  --color-danger-dark:    #b02a37;
+  --color-warning:        #ffc107;
+
+  /* Text */
+  --color-text-primary:   #333333;
+  --color-text-secondary: #495057;
+  --color-text-muted:     #6c757d;
+
+  /* Surfaces */
+  --color-bg-light:       #f8f9fa;
+  --color-border:         #dee2e6;
+
+  /* Navigation */
+  --color-nav-bg:         #004539;
+  --color-nav-hover:      #006655;
+  --color-nav-sub:        #003328;
+
+  /* Focus */
+  --color-focus-border:   #4db8a4;
+  --color-focus-ring:     rgba(0, 136, 113, 0.2);
+
+  --font-primary: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, 'Helvetica Neue', sans-serif;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: var(--font-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

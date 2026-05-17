@@ -1,6 +1,5 @@
 .lista-beneficiarios-container {
     padding: 20px;
-    font-family: sans-serif;
     max-width: 900px;
     margin: 20px auto;
 }
@@ -14,11 +13,11 @@
 
 .header-lista h1 {
     margin: 0;
-    color: #333;
+    color: var(--color-text-primary);
 }
 
 .btn-adicionar {
-    background-color: #28a745;
+    background-color: var(--color-primary);
     color: white;
     padding: 10px 15px;
     border-radius: 5px;
@@ -28,7 +27,7 @@
 }
 
 .btn-adicionar:hover {
-    background-color: #218838;
+    background-color: var(--color-primary-hover);
 }
 
 .caixa-busca {
@@ -68,18 +67,18 @@
 }
 
 .acao-editar {
-    color: #007bff;
+    color: var(--color-primary);
     text-decoration: none;
     font-size: 20px;
 }
 .acao-editar:hover {
-    color: #0056b3;
+    color: var(--color-primary-hover);
 }
 
 .acoes {
   display: flex;
   align-items: center;
-  gap: 16px; /* Aumentei o espaçamento */
+  gap: 16px;
 }
 
 .acao-expandir {
@@ -95,7 +94,7 @@
 }
 
 .acao-expandir:hover {
-  color: #007bff;
+  color: var(--color-primary);
 }
 
 .linha-detalhes td {
@@ -115,9 +114,9 @@
 
 .detalhe-grupo h4 {
   font-weight: 600;
-  color: #2d3748; /* gray-800 */
+  color: #2d3748;
   margin-bottom: 1rem;
-  border-bottom: 2px solid #4ade80; /* green-400 */
+  border-bottom: 2px solid var(--color-primary);
   padding-bottom: 0.5rem;
   font-size: 1rem;
 }
@@ -134,24 +133,24 @@
 }
 
 .detalhe-item.full-width {
-  grid-column: 1 / -1; /* Ocupa a largura total */
+  grid-column: 1 / -1;
 }
 
 .detalhe-label {
   font-size: 0.8rem;
-  color: #718096; /* gray-500 */
+  color: #718096;
   font-weight: 600;
   margin-bottom: 2px;
 }
 
 .detalhe-value {
   font-size: 0.9rem;
-  color: #2d3748; /* gray-800 */
+  color: #2d3748;
 }
 
 .observacao-texto {
   font-size: 0.9rem;
-  color: #4a5568; /* gray-700 */
-  white-space: pre-wrap; /* Mantém a formatação do texto */
+  color: #4a5568;
+  white-space: pre-wrap;
   line-height: 1.5;
 }

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'siscasa-v1';
+const CACHE_NAME = 'siscasa-493605c';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

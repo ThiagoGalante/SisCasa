@@ -18,13 +18,16 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "node scripts/prebuild.js && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "serve": "serve -s build -l 3000"
+    "serve": "serve -s build -l 3000",
+    "generate:icons": "node scripts/generate-icons.js"
   },
   "devDependencies": {
-    "serve": "^14.2.0"
+    "serve": "^14.2.0",
+    "sharp": "^0.34.5",
+    "to-ico": "^1.1.5"
   },
   "eslintConfig": {
     "extends": [

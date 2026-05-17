@@ -1,57 +1,34 @@
 {
-  "short_name": "Siscasa",
-  "name": "Siscasa",
+  "short_name": "Aconchego",
+  "name": "SisCasa — Casa do Aconchego",
   "id": "/",
   "icons": [
     {
       "src": "favicon.ico",
-      "sizes": "64x64",
+      "sizes": "48x48",
       "type": "image/x-icon"
     },
     {
       "src": "logo192.png",
       "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any"
-    },
-    {
-      "src": "logo192.png",
-      "type": "image/png",
-      "sizes": "192x192",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
       "sizes": "512x512",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
-      "src": "logo512.png",
+      "src": "apple-touch-icon.png",
       "type": "image/png",
-      "sizes": "512x512",
-      "purpose": "maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "screenshots/desktop.png",
-      "type": "image/png",
-      "sizes": "1280x720",
-      "form_factor": "wide",
-      "label": "Tela inicial do Siscasa em desktop"
-    },
-    {
-      "src": "screenshots/mobile.png",
-      "type": "image/png",
-      "sizes": "750x1334",
-      "form_factor": "narrow",
-      "label": "Tela inicial do Siscasa em mobile"
+      "sizes": "180x180"
     }
   ],
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "theme_color": "#1976d2",
-  "background_color": "#ffffff"
+  "theme_color": "#008871",
+  "background_color": "#008871"
 }
