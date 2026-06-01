@@ -1,0 +1,100 @@
+<!doctype html><html lang="pt-br"><head><meta charset="utf-8"><style>* { box-sizing: border-box; }
+.form-container { background: #fff; padding: 24px; border-radius: 12px; max-width: 1200px; margin: 24px auto; box-shadow: 0 6px 20px rgba(12, 23, 34, 0.06); }
+
+.title { font-size: 1.25rem; font-weight: 700; color: var(--color-primary-dark); margin-bottom: 12px; }
+
+.form-header { display: flex; justify-content: flex-start; margin-bottom: 16px; }
+
+form { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+.form-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; width: 100%; }
+.form-field { display: flex; flex-direction: column; min-width: 160px; flex: 1; }
+.form-field label { margin-bottom: 6px; font-size: 0.9rem; color: #344054; font-weight: 600; }
+.form-field input, .form-field select, .form-field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #e6e9ef;
+  font-size: 0.95rem;
+  background: #ffffff;
+}
+
+.form-field textarea { min-height: 88px; resize: vertical; }
+
+.field-sm { flex: 0 0 180px; }
+.field-md { flex: 1 1 240px; }
+.field-lg { flex: 2 1 440px; }
+
+.section-table { margin-top: 18px; }
+.section-table h3 { margin-bottom: 8px; font-size: 1rem; color: var(--color-primary-dark); font-weight: 700; }
+
+.table-header, .table-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+}
+.table-header { margin-bottom: 8px; padding: 6px 8px; border-radius: 8px; background: #fbfdfb; }
+.table-header .col-nome, .table-header .col-parentesco, .table-header .col-endereco, .table-header .col-fone, .table-header .col-acao {
+  font-weight: 700; font-size: 0.85rem; color: #334155;
+}
+
+.col-nome { flex: 2; min-width: 180px; }
+.col-parentesco { flex: 1; min-width: 120px; }
+.col-endereco { flex: 2; min-width: 180px; }
+.col-fone { flex: 1; min-width: 120px; }
+.col-acao { width: 48px; display: flex; justify-content: center; align-items: center; }
+
+.table-row input, .table-row select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #e6e9ef;
+  font-size: 0.9rem;
+}
+
+.btn-add { margin-top: 8px; padding: 8px 12px; background: var(--color-success); color: white; border-radius: 8px; border: none; cursor: pointer; }
+.btn-add:hover { background: var(--color-success-dark); }
+
+.btn-delete { background: var(--color-danger); color: white; border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+.btn-delete:hover { background: var(--color-danger-dark); }
+
+.form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; }
+.btn-save { background: var(--color-primary); color: #fff; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+.btn-save:hover { background: var(--color-primary-hover); }
+.btn-clear { background: var(--color-text-muted); color: #fff; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; }
+.btn-clear:hover { background: #545b62; }
+
+@media (max-width: 900px) {
+  .field-sm, .field-md, .field-lg { flex-basis: 100%; flex: 1 1 100%; min-width: 0; }
+  .col-nome, .col-parentesco, .col-endereco, .col-fone { min-width: 0; flex-basis: 100%; flex: 1 1 100%; }
+  .table-header { display: none; }
+  .table-row { flex-direction: column; gap: 8px; padding: 8px 6px; border-radius: 8px; background: #fbfbfb; }
+  .col-acao { width: auto; display: flex; justify-content: flex-end; }
+}
+
+.error-message {
+  color: var(--color-danger);
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+  body { background:#eef1f4; margin:0; padding:24px; }
+  .novo input, .novo select, .novo textarea { border-color:#008871 !important; background:#f0fbf8; }
+  .novo label::after { content:" ✦ novo"; color:#008871; font-weight:700; font-size:.7rem; }
+  .badge { display:inline-block; background:#008871; color:#fff; font-size:.7rem; font-weight:700;
+           padding:2px 8px; border-radius:10px; margin-left:8px; vertical-align:middle; }
+  .proj-box { display:flex; flex-wrap:wrap; gap:12px; padding:8px 0; }
+  .proj-box label { display:flex; align-items:center; gap:6px; font-weight:500; color:#333; }
+  .foto-prev { width:140px; height:90px; background:#dfeee9; border:1px dashed #008871;
+               border-radius:8px; display:flex; align-items:center; justify-content:center;
+               color:#008871; font-size:.8rem; margin-top:8px; }
+  .legenda { max-width:1000px; margin:0 auto 12px; font-family:Arial,sans-serif; color:#555; font-size:.85rem; }
+</style></head>
+  <body><div class="legenda">SisCasa — Módulo de Beneficiários (ANTES). Renderização do formulário com o CSS real do projeto.</div>
+  <div class="form-container"><h2 class="title">Cadastrar Beneficiário</h2><form><div class="form-row"><div class="form-field field-md "><label>Nro. Cad.</label><input readonly style="background:#e9ecef" value="20260002"></div><div class="form-field field-md "><label>Data Cad.</label><input  value=""></div><div class="form-field field-md "><label>Tipo de Benefício</label><select><option>Selecione</option></select></div></div><div class="form-row"><div class="form-field field-lg "><label>Nome</label><input  value="Ana Maryshka Vila Huayhua"></div><div class="form-field field-md "><label>Data Nasc.</label><input  value=""></div><div class="form-field field-md "><label>Email</label><input  value=""></div></div><div class="form-row"><div class="form-field field-lg "><label>Endereço</label><input  value="Rua Adolfo Lutz, 19"></div><div class="form-field field-sm "><label>UF</label><select><option>Selecione</option></select></div><div class="form-field field-md "><label>Cidade</label><select><option>Selecione</option></select></div><div class="form-field field-md "><label>CEP</label><input  value=""></div></div><div class="form-row"><div class="form-field field-md "><label>Sexo</label><select><option>Selecione</option></select></div><div class="form-field field-md "><label>Raça</label><select><option>Selecione</option></select></div><div class="form-field field-md "><label>Religião</label><select><option>Selecione</option></select></div><div class="form-field field-sm "><label>Fumante</label><select><option>Selecione</option></select></div></div><div class="form-row"><div class="form-field field-md "><label>CPF</label><input  value=""></div><div class="form-field field-md "><label>RG</label><input  value="14483738"></div><div class="form-field field-md "><label>Fone</label><input  value=""></div><div class="form-field field-md "><label>Profissão</label><input  value=""></div></div><div class="form-row"><div class="form-field field-lg "><label>Hospital</label><select><option>Selecione</option></select></div><div class="form-field field-md "><label>Mat. Hospital</label><input  value=""></div></div><div class="form-row"><div class="form-field field-lg "><label>Patologia</label><input  value=""></div><div class="form-field field-lg "><label>Med. em Uso</label><input  value=""></div></div><div class="form-row"><div class="form-field field-lg "><label>Observação</label><textarea></textarea></div></div>
+  <div class="section-table">
+    <h3>Responsáveis</h3>
+    <div class="table-header"><span class="col-nome">Nome</span><span class="col-parentesco">Parentesco</span><span class="col-endereco">Endereço</span><span class="col-fone">Fone</span><span class="col-acao">Ação</span></div>
+    <div class="table-row"><div class="col-nome"><input value="Sonia Gregoria"></div><div class="col-parentesco"><select><option>MÃE</option></select></div><div class="col-endereco"><input></div><div class="col-fone"><input></div><div class="col-acao"><button class="btn-delete">🗑</button></div></div>
+    <button class="btn-add">+ Adicionar Responsável</button>
+  </div></form></div></body></html>

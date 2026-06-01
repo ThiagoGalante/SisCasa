@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useParams, useNavigate } from "react-router-dom";
 import { authenticatedFetch } from "../utils/api";
+import { supabase } from "../lib/supabaseClient";
 import "./FormularioBeneficiarios.css";
 
 const FormularioBeneficiarios = () => {
@@ -31,8 +32,12 @@ const FormularioBeneficiarios = () => {
     religioes: [],
     hospitais: [],
     grausParentesco: [],
+    projetos: [],
   });
   const [cidadesFiltradas, setCidadesFiltradas] = useState([]);
+  const [projetosSel, setProjetosSel] = useState([]);
+  const [fotoUrl, setFotoUrl] = useState('');
+  const [fotoUploading, setFotoUploading] = useState(false);
 
   useEffect(() => {
     const carregarOpcoes = async () => {
@@ -44,6 +49,7 @@ const FormularioBeneficiarios = () => {
           religioesRes,
           hospitaisRes,
           grausParentescoRes,
+          projetosRes,
         ] = await Promise.all([
           fetch("/api/tipos-beneficio").catch(() => ({ json: async () => [] })),
           fetch("/api/ufs").catch(() => ({ json: async () => [] })),
@@ -51,6 +57,7 @@ const FormularioBeneficiarios = () => {
           fetch("/api/religioes").catch(() => ({ json: async () => [] })),
           fetch("/api/hospitais").catch(() => ({ json: async () => [] })),
           fetch("/api/graus-parentesco").catch(() => ({ json: async () => [] })),
+          fetch("/api/projetos").catch(() => ({ json: async () => [] })),
         ]);
         setOpcoes({
           tiposBeneficio: await tiposBeneficioRes.json(),
@@ -59,6 +66,7 @@ const FormularioBeneficiarios = () => {
           religioes: await religioesRes.json(),
           hospitais: await hospitaisRes.json(),
           grausParentesco: await grausParentescoRes.json(),
+          projetos: await projetosRes.json(),
         });
       } catch (err) {
         console.warn("Erro ao carregar opções (ignorável em dev):", err);
@@ -87,6 +95,8 @@ const FormularioBeneficiarios = () => {
           }
 
           reset(formattedData);
+          setProjetosSel(Array.isArray(data.projetos) ? data.projetos : []);
+          setFotoUrl(data.foto_url || '');
         } catch (error) {
           console.error("Erro ao buscar beneficiário:", error);
           alert("Falha ao carregar dados do beneficiário.");
@@ -181,9 +191,10 @@ const FormularioBeneficiarios = () => {
     const method = isEditing ? "PUT" : "POST";
 
     try {
+      const payload = { ...data, projetos: projetosSel, foto_url: fotoUrl };
       const res = await authenticatedFetch(url, {
         method,
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -202,6 +213,27 @@ const FormularioBeneficiarios = () => {
     } catch (err) {
       console.error("Falha ao submeter o formulário:", err);
       alert(`Falha ao salvar: ${err.message}`);
+    }
+  };
+
+  const handleFotoChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setFotoUploading(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const path = `beneficiario-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from('fotos-beneficiarios')
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from('fotos-beneficiarios').getPublicUrl(path);
+      setFotoUrl(pub.publicUrl);
+    } catch (err) {
+      console.error('Erro ao enviar foto:', err);
+      alert('Falha ao enviar a foto: ' + (err.message || err));
+    } finally {
+      setFotoUploading(false);
     }
   };
 
@@ -297,6 +329,21 @@ const FormularioBeneficiarios = () => {
 
         <div className="form-row">
           <div className="form-field field-md">
+            <label>Bairro</label>
+            <input {...register("bairro")} />
+          </div>
+          <div className="form-field field-md">
+            <label>Contato de Emergência</label>
+            <input {...register("contato_emg")} />
+          </div>
+          <div className="form-field field-md">
+            <label>Fone de Emergência</label>
+            <input {...register("fone_emg")} />
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-field field-md">
             <label>Sexo</label>
             <select {...register("sexo")}>
               <option value="">Selecione</option>
@@ -373,9 +420,60 @@ const FormularioBeneficiarios = () => {
         </div>
 
         <div className="form-row">
+          <div className="form-field field-md">
+            <label>Médico</label>
+            <input {...register("medico")} />
+          </div>
+          <div className="form-field field-lg">
+            <label>Restrição Alimentar</label>
+            <input {...register("restr_alim")} />
+          </div>
+          <div className="form-field field-lg">
+            <label>Restrição Médica</label>
+            <input {...register("restr_med")} />
+          </div>
+        </div>
+
+        <div className="form-row">
           <div className="form-field field-lg">
             <label>Observação</label>
             <textarea {...register("observacao")} />
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-field field-lg">
+            <label>Foto</label>
+            <input type="file" accept="image/*" onChange={handleFotoChange} disabled={fotoUploading} />
+            {fotoUploading && <span className="error-message">Enviando foto...</span>}
+            {fotoUrl && (
+              <img
+                src={fotoUrl}
+                alt="Foto do beneficiário"
+                style={{ maxWidth: '160px', marginTop: '8px', borderRadius: '8px', display: 'block' }}
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="section-table">
+          <h3>Projetos</h3>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', padding: '8px 0' }}>
+            {opcoes.projetos.length === 0 && <p>Nenhum projeto cadastrado.</p>}
+            {opcoes.projetos.map((p) => (
+              <label key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <input
+                  type="checkbox"
+                  checked={projetosSel.includes(p.id)}
+                  onChange={(e) =>
+                    setProjetosSel((prev) =>
+                      e.target.checked ? [...prev, p.id] : prev.filter((x) => x !== p.id)
+                    )
+                  }
+                />
+                {p.nome}
+              </label>
+            ))}
           </div>
         </div>
 
@@ -420,7 +518,7 @@ const FormularioBeneficiarios = () => {
           </button>
         </div>
 
-        <div className="section-table">
+        <div className="section-table secao-familiar">
           <h3>Composição Familiar</h3>
 
           <div className="table-header">

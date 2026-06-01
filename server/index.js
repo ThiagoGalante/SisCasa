@@ -5,6 +5,7 @@ const cors = require('cors');
 const { authenticateToken, requireAdmin } = require('./middleware/auth');
 const authRoutes = require('./routes/auth');
 const doacoesRoutes = require('./routes/doacoes');
+const servicosRoutes = require('./routes/servicos');
 
 const app = express();
 const port = 5000; // Porta que o servidor irá escutar
@@ -21,6 +22,9 @@ app.use('/api/auth', authRoutes);
 // Rotas de doações e doadores
 app.use('/api/doacoes', authenticateToken, doacoesRoutes);
 app.use('/api/doadores', authenticateToken, doacoesRoutes);
+
+// Rotas de serviços de apoio (atendimentos a beneficiários)
+app.use('/api/servicos-apoio', authenticateToken, servicosRoutes);
 
 console.log('Conectando ao banco de dados...');
 pool.connect((err) => {
@@ -54,6 +58,7 @@ createLookupEndpoint('/api/racas', 'RACA', 'DESC_RAC', 'DESC_RAC'); // Nome é o
 createLookupEndpoint('/api/religioes', 'RELIGIAO', 'DESC_REL', 'DESC_REL'); // Nome é o próprio valor
 createLookupEndpoint('/api/hospitais', 'HOSPITAL', 'NOME_HOS', 'NOME_HOS'); // Nome é o próprio valor
 createLookupEndpoint('/api/graus-parentesco', 'GRAU_PARENTESCO', 'DESC_GPA', 'DESC_GPA'); // Nome é o próprio valor
+createLookupEndpoint('/api/projetos', 'PROJETOS', 'cod_proj', 'nome_proj'); // Projetos/programas (N:N com beneficiários)
 
 // Endpoint para buscar cidades filtradas por UF
 app.get('/api/cidades/:uf', async (req, res) => {
@@ -114,9 +119,10 @@ const getLookupId = async (client, tableName, columnName, value) => {
  */
 app.post('/api/beneficiarios', authenticateToken, requireAdmin, async (req, res) => {
   const {
-    nro_cad, data_cad, nome, endereco, cidade, cep, email, data_nasc, sexo,
+    nro_cad, data_cad, nome, endereco, bairro, cidade, cep, email, data_nasc, sexo,
     raca, religiao, fumante, cpf, rg, hospital, mat_hospital, patologia, tipo_beneficio,
-    medicacao, profissao, fone, observacao, responsaveis, familia
+    medicacao, profissao, fone, observacao, responsaveis, familia,
+    contato_emg, fone_emg, medico, restr_alim, restr_med, foto_url, projetos
   } = req.body;
 
   const client = await pool.connect();
@@ -139,21 +145,35 @@ app.post('/api/beneficiarios', authenticateToken, requireAdmin, async (req, res)
     const pessoaQuery = `
       INSERT INTO PESSOAS (
         numcad_pes, tipo_pes, datacad_pes, nome_pes, rg_pes, cpf_pes, sexo_pes,
-        datanasc_pes, endereco_pes, cep_pes, email_pes, profissao_pes, fone_pes,
+        datanasc_pes, endereco_pes, bairro_pes, cep_pes, email_pes, profissao_pes, fone_pes,
         patologia_pes, matricula_hosp_pes, medicamento_pes, flag_fumante_pes,
-        observacoes_pes, cod_rel, cod_rac, cod_mun, cod_hos
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
+        observacoes_pes, cod_rel, cod_rac, cod_mun, cod_hos,
+        contato_emg_pes, fone_emg_pes, medico_pes, restr_alim_pes, restr_med_pes, foto_url_pes
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29)
     `;
     const pessoaValues = [
       newNumCad, 'B', data_cad, nome, rg, cpf, sexo ? sexo.charAt(0) : null,
-      data_nasc, endereco, cep, email, profissao, fone, 
+      data_nasc, endereco, bairro, cep, email, profissao, fone,
       patologia, mat_hospital, medicacao, fumante === 'sim' ? 1 : 0,
-      observacao, codRel, codRac, codMun, codHos
+      observacao, codRel, codRac, codMun, codHos,
+      contato_emg, fone_emg, medico, restr_alim, restr_med, foto_url
     ];
     await client.query(pessoaQuery, pessoaValues);
 
     // 4. Inserir na tabela 'BENEFICIARIOS' usando o tipo de benefício do formulário
     await client.query('INSERT INTO BENEFICIARIOS (cod_tib, numcad_pes) VALUES ($1, $2)', [tipo_beneficio, newNumCad]);
+
+    // 4b. Inserir vinculos de Projetos (N:N)
+    if (Array.isArray(projetos)) {
+      for (const codProj of projetos) {
+        if (Number.isInteger(codProj)) {
+          await client.query(
+            'INSERT INTO BENEFICIARIO_PROJETOS (numcad_ben, cod_proj) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            [newNumCad, codProj]
+          );
+        }
+      }
+    }
 
     // Função para inserir pessoas (responsáveis/familiares) e retornar o ID
     const inserirPessoaRelacionada = async (pessoa, tipo) => {
@@ -230,6 +250,20 @@ app.get('/api/beneficiarios', authenticateToken, async (req, res) => {
       p.medicamento_pes AS "medicacao",
       p.profissao_pes AS "profissao",
       p.observacoes_pes AS "observacao",
+      p.bairro_pes AS "bairro",
+      p.contato_emg_pes AS "contatoEmg",
+      p.fone_emg_pes AS "foneEmg",
+      p.medico_pes AS "medico",
+      p.restr_alim_pes AS "restricaoAlimentar",
+      p.restr_med_pes AS "restricaoMedica",
+      p.foto_url_pes AS "fotoUrl",
+      COALESCE(
+        (SELECT json_agg(pr.nome_proj ORDER BY pr.nome_proj)
+           FROM BENEFICIARIO_PROJETOS bp
+           JOIN PROJETOS pr ON pr.cod_proj = bp.cod_proj
+          WHERE bp.numcad_ben = p.numcad_pes),
+        '[]'::json
+      ) AS "projetos",
       COALESCE(
         (SELECT json_agg(json_build_object(
             'nome', resp_p.nome_pes,
@@ -315,6 +349,19 @@ app.get('/api/beneficiarios/:id', authenticateToken, async (req, res) => {
       p.patologia_pes AS "patologia",
       p.medicamento_pes AS "medicacao",
       p.observacoes_pes AS "observacao",
+      p.bairro_pes AS "bairro",
+      p.contato_emg_pes AS "contato_emg",
+      p.fone_emg_pes AS "fone_emg",
+      p.medico_pes AS "medico",
+      p.restr_alim_pes AS "restr_alim",
+      p.restr_med_pes AS "restr_med",
+      p.foto_url_pes AS "foto_url",
+      COALESCE(
+        (SELECT json_agg(bp.cod_proj)
+           FROM BENEFICIARIO_PROJETOS bp
+          WHERE bp.numcad_ben = p.numcad_pes),
+        '[]'::json
+      ) AS "projetos",
       COALESCE(
         (SELECT json_agg(json_build_object(
             'nome', resp_p.nome_pes,
@@ -371,9 +418,10 @@ app.get('/api/beneficiarios/:id', authenticateToken, async (req, res) => {
 app.put('/api/beneficiarios/:id', authenticateToken, requireAdmin, async (req, res) => {
   const { id } = req.params;
   const {
-    nro_cad, data_cad, nome, endereco, cidade, cep, email, data_nasc, sexo,
+    nro_cad, data_cad, nome, endereco, bairro, cidade, cep, email, data_nasc, sexo,
     raca, religiao, fumante, cpf, rg, hospital, mat_hospital, patologia, tipo_beneficio,
-    medicacao, profissao, fone, observacao, responsaveis, familia
+    medicacao, profissao, fone, observacao, responsaveis, familia,
+    contato_emg, fone_emg, medico, restr_alim, restr_med, foto_url, projetos
   } = req.body;
 
   const client = await pool.connect();
@@ -391,21 +439,37 @@ app.put('/api/beneficiarios/:id', authenticateToken, requireAdmin, async (req, r
     const pessoaQuery = `
       UPDATE PESSOAS SET
         datacad_pes = $1, nome_pes = $2, rg_pes = $3, cpf_pes = $4, sexo_pes = $5,
-        datanasc_pes = $6, endereco_pes = $7, cep_pes = $8, email_pes = $9,
-        profissao_pes = $10, fone_pes = $11, patologia_pes = $12, matricula_hosp_pes = $13,
-        medicamento_pes = $14, flag_fumante_pes = $15, observacoes_pes = $16,
-        cod_rel = $17, cod_rac = $18, cod_mun = $19, cod_hos = $20
-      WHERE numcad_pes = $21
+        datanasc_pes = $6, endereco_pes = $7, bairro_pes = $8, cep_pes = $9, email_pes = $10,
+        profissao_pes = $11, fone_pes = $12, patologia_pes = $13, matricula_hosp_pes = $14,
+        medicamento_pes = $15, flag_fumante_pes = $16, observacoes_pes = $17,
+        cod_rel = $18, cod_rac = $19, cod_mun = $20, cod_hos = $21,
+        contato_emg_pes = $22, fone_emg_pes = $23, medico_pes = $24,
+        restr_alim_pes = $25, restr_med_pes = $26, foto_url_pes = $27
+      WHERE numcad_pes = $28
     `;
     const pessoaValues = [
       data_cad, nome, rg, cpf, sexo ? sexo.charAt(0) : null, data_nasc, endereco,
-      cep, email, profissao, fone, patologia, mat_hospital, medicacao,
-      fumante === 'sim' ? 1 : 0, observacao, codRel, codRac, codMun, codHos, id
+      bairro, cep, email, profissao, fone, patologia, mat_hospital, medicacao,
+      fumante === 'sim' ? 1 : 0, observacao, codRel, codRac, codMun, codHos,
+      contato_emg, fone_emg, medico, restr_alim, restr_med, foto_url, id
     ];
     await client.query(pessoaQuery, pessoaValues);
 
     // 3. Atualizar a tabela 'BENEFICIARIOS'
     await client.query('UPDATE BENEFICIARIOS SET cod_tib = $1 WHERE numcad_pes = $2', [tipo_beneficio, id]);
+
+    // 3b. Substituir vinculos de Projetos (N:N)
+    await client.query('DELETE FROM BENEFICIARIO_PROJETOS WHERE numcad_ben = $1', [id]);
+    if (Array.isArray(projetos)) {
+      for (const codProj of projetos) {
+        if (Number.isInteger(codProj)) {
+          await client.query(
+            'INSERT INTO BENEFICIARIO_PROJETOS (numcad_ben, cod_proj) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            [id, codProj]
+          );
+        }
+      }
+    }
 
     // 4. Limpar e recriar responsáveis e familiares (abordagem simples)
     // Primeiro, pegamos os IDs das pessoas relacionadas para poder deletá-las
