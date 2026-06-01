@@ -16,6 +16,8 @@ import FormularioDoacao from './components/FormularioDoacao';
 import GerenciarUsuarios from './components/GerenciarUsuarios';
 import FormularioUsuario from './components/FormularioUsuario';
 import PaginaInicial from './components/PaginaInicial';
+import ServicosApoio from './components/ServicosApoio';
+import FormularioServicoApoio from './components/FormularioServicoApoio';
 
 function App() {
   return (
@@ -41,6 +43,9 @@ function App() {
                       <Route path="/cestas-basicas/cadastro" element={<FormularioCestaBasica />} />
                       <Route path="/cestas-basicas/editar/:id" element={<FormularioCestaBasica />} />
                       <Route path="/beneficiarios/editar/:id" element={<FormularioBeneficiarios />} />
+                      <Route path="/servicos-de-apoio" element={<ServicosApoio />} />
+                      <Route path="/servicos-de-apoio/cadastro" element={<FormularioServicoApoio />} />
+                      <Route path="/servicos-de-apoio/editar/:id" element={<FormularioServicoApoio />} />
                       <Route path="/doacoes" element={<ListaDoacoes />} />
                       <Route path="/doacoes/cadastro" element={<FormularioDoacao />} />
                       <Route path="/doacoes/editar/:id" element={<FormularioDoacao />} />

@@ -1,0 +1,82 @@
+<!doctype html><html lang="pt-br"><head><meta charset="utf-8">
+<style>:root{--color-primary:#008871;--color-primary-dark:#04674f;--color-primary-hover:#00735f;
+  --color-text-muted:#6b7280;--color-danger:#dc3545;} body{background:#eef1f4;margin:0;padding:24px;font-family:Arial,sans-serif;}.servicos-container { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+
+.header-servicos {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.header-servicos h1 { font-size: 1.4rem; color: var(--color-primary-dark); margin: 0; }
+
+.btn-primario {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-primario:hover { background: var(--color-primary-hover); }
+
+.historico-container { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 6px 20px rgba(12, 23, 34, 0.06); }
+.historico-container h2 { font-size: 1.1rem; color: var(--color-primary-dark); margin-top: 0; }
+.total-badge { color: var(--color-text-muted); font-weight: 500; font-size: 0.9rem; }
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin: 16px 0;
+}
+.filtros input[type="text"], .filtros select {
+  padding: 8px 10px;
+  border: 1px solid #e6e9ef;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+.filtros label { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #344054; }
+.filtros input[type="date"] { padding: 6px 8px; border: 1px solid #e6e9ef; border-radius: 8px; }
+.btn-limpar { background: var(--color-text-muted); color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+
+.tabela-historico { width: 100%; border-collapse: collapse; }
+.tabela-historico th, .tabela-historico td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #eef1f4; font-size: 0.9rem; }
+.tabela-historico th { color: #334155; font-weight: 700; }
+
+.acoes { display: flex; gap: 10px; }
+.link-editar { color: var(--color-primary); text-decoration: none; font-weight: 600; }
+.link-excluir { background: none; border: none; color: var(--color-danger); cursor: pointer; font-weight: 600; padding: 0; }
+.sem-acao { color: var(--color-text-muted); }
+.vazio { color: var(--color-text-muted); padding: 12px 0; }
+
+.paginacao { display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 16px; }
+.paginacao button { padding: 6px 12px; border: 1px solid #e6e9ef; border-radius: 8px; background: #fff; cursor: pointer; }
+.paginacao button:disabled { opacity: 0.5; cursor: not-allowed; }
+</style></head>
+<body>
+<div class="servicos-container">
+  <div class="header-servicos"><h1>Serviços de Apoio</h1><button class="btn-primario">+ Novo Atendimento</button></div>
+  <section class="historico-container">
+    <h2>Atendimentos <span class="total-badge">(4)</span></h2>
+    <div class="filtros">
+      <input type="text" placeholder="Filtrar por beneficiário...">
+      <select><option>Todos os tipos</option><option>Refeição</option><option>Banho</option></select>
+      <label>De:<input type="date"></label>
+      <label>Até:<input type="date"></label>
+      <button class="btn-limpar">Limpar filtros</button>
+    </div>
+    <table class="tabela-historico">
+      <thead><tr><th>Beneficiário</th><th>Tipo de Serviço</th><th>Data</th><th>Observação</th><th>Ações</th></tr></thead>
+      <tbody><tr><td>Ana Maryshka Vila Huayhua</td><td>Refeição</td><td>30/05/2026</td><td>Almoço servido</td>
+  <td class="acoes"><a class="link-editar" href="#">Editar</a><button class="link-excluir">Excluir</button></td></tr><tr><td>Sonia Gregoria Huayhua</td><td>Lavanderia</td><td>29/05/2026</td><td>—</td>
+  <td class="acoes"><a class="link-editar" href="#">Editar</a><button class="link-excluir">Excluir</button></td></tr><tr><td>Wara Clara Gomes</td><td>Banho</td><td>29/05/2026</td><td>Família hospedada</td>
+  <td class="acoes"><a class="link-editar" href="#">Editar</a><button class="link-excluir">Excluir</button></td></tr><tr><td>Belen Jhasmin Gomes</td><td>Transporte</td><td>28/05/2026</td><td>Ida ao hospital</td>
+  <td class="acoes"><a class="link-editar" href="#">Editar</a><button class="link-excluir">Excluir</button></td></tr></tbody>
+    </table>
+    <div class="paginacao"><button disabled>‹ Anterior</button><span>Página 1 de 1</span><button disabled>Próxima ›</button></div>
+  </section>
+</div>
+</body></html>

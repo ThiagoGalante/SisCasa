@@ -1,0 +1,55 @@
+.servicos-container { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+
+.header-servicos {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.header-servicos h1 { font-size: 1.4rem; color: var(--color-primary-dark); margin: 0; }
+
+.btn-primario {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-primario:hover { background: var(--color-primary-hover); }
+
+.historico-container { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 6px 20px rgba(12, 23, 34, 0.06); }
+.historico-container h2 { font-size: 1.1rem; color: var(--color-primary-dark); margin-top: 0; }
+.total-badge { color: var(--color-text-muted); font-weight: 500; font-size: 0.9rem; }
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin: 16px 0;
+}
+.filtros input[type="text"], .filtros select {
+  padding: 8px 10px;
+  border: 1px solid #e6e9ef;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+.filtros label { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #344054; }
+.filtros input[type="date"] { padding: 6px 8px; border: 1px solid #e6e9ef; border-radius: 8px; }
+.btn-limpar { background: var(--color-text-muted); color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+
+.tabela-historico { width: 100%; border-collapse: collapse; }
+.tabela-historico th, .tabela-historico td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #eef1f4; font-size: 0.9rem; }
+.tabela-historico th { color: #334155; font-weight: 700; }
+
+.acoes { display: flex; gap: 10px; }
+.link-editar { color: var(--color-primary); text-decoration: none; font-weight: 600; }
+.link-excluir { background: none; border: none; color: var(--color-danger); cursor: pointer; font-weight: 600; padding: 0; }
+.sem-acao { color: var(--color-text-muted); }
+.vazio { color: var(--color-text-muted); padding: 12px 0; }
+
+.paginacao { display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 16px; }
+.paginacao button { padding: 6px 12px; border: 1px solid #e6e9ef; border-radius: 8px; background: #fff; cursor: pointer; }
+.paginacao button:disabled { opacity: 0.5; cursor: not-allowed; }
