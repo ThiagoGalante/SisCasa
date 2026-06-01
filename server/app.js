@@ -2,11 +2,19 @@ const express = require('express');
 const pool = require('./db');
 const cors = require('cors');
 const getLookupId = require('./utils/getLookupId');
+const servicosRoutes = require('./routes/servicos');
 
 const app = express();
 
 app.use(express.json());
 app.use(cors());
+
+// app.js é o servidor usado pelos testes (sem auth real do Supabase).
+// Injeta um usuário admin para que as rotas protegidas por requireAdmin sejam testáveis.
+app.use('/api/servicos-apoio', (req, res, next) => {
+  req.user = { id: 'test-admin', email: 'admin@test', cargo: 'admin' };
+  next();
+}, servicosRoutes);
 
 const createLookupEndpoint = (path, tableName, idColumn, nameColumn) => {
   app.get(path, async (req, res) => {
@@ -26,12 +34,14 @@ createLookupEndpoint('/api/racas', 'RACA', 'DESC_RAC', 'DESC_RAC');
 createLookupEndpoint('/api/religioes', 'RELIGIAO', 'DESC_REL', 'DESC_REL');
 createLookupEndpoint('/api/hospitais', 'HOSPITAL', 'NOME_HOS', 'NOME_HOS');
 createLookupEndpoint('/api/graus-parentesco', 'GRAU_PARENTESCO', 'DESC_GPA', 'DESC_GPA');
+createLookupEndpoint('/api/projetos', 'PROJETOS', 'cod_proj', 'nome_proj');
 
 app.post('/api/beneficiarios', async (req, res) => {
   const {
-    nro_cad, data_cad, nome, endereco, cidade, cep, email, data_nasc, sexo,
+    nro_cad, data_cad, nome, endereco, bairro, cidade, cep, email, data_nasc, sexo,
     raca, religiao, fumante, cpf, rg, hospital, mat_hospital, patologia, tipo_beneficio,
-    medicacao, profissao, fone, observacao, responsaveis, familia
+    medicacao, profissao, fone, observacao, responsaveis, familia,
+    contato_emg, fone_emg, medico, restr_alim, restr_med, foto_url, projetos
   } = req.body;
 
   const client = await pool.connect();
@@ -51,20 +61,34 @@ app.post('/api/beneficiarios', async (req, res) => {
     const pessoaQuery = `
       INSERT INTO PESSOAS (
         numcad_pes, tipo_pes, datacad_pes, nome_pes, rg_pes, cpf_pes, sexo_pes,
-        datanasc_pes, endereco_pes, cep_pes, email_pes, profissao_pes, fone_pes,
+        datanasc_pes, endereco_pes, bairro_pes, cep_pes, email_pes, profissao_pes, fone_pes,
         patologia_pes, matricula_hosp_pes, medicamento_pes, flag_fumante_pes,
-        observacoes_pes, cod_rel, cod_rac, cod_mun, cod_hos
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
+        observacoes_pes, cod_rel, cod_rac, cod_mun, cod_hos,
+        contato_emg_pes, fone_emg_pes, medico_pes, restr_alim_pes, restr_med_pes, foto_url_pes
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29)
     `;
     const pessoaValues = [
       newNumCad, 'B', data_cad, nome, rg, cpf, sexo ? sexo.charAt(0) : null,
-      data_nasc, endereco, cep, email, profissao, fone, 
+      data_nasc, endereco, bairro, cep, email, profissao, fone,
       patologia, mat_hospital, medicacao, fumante === 'sim' ? '1' : '0',
-      observacao, codRel, codRac, codMun, codHos
+      observacao, codRel, codRac, codMun, codHos,
+      contato_emg, fone_emg, medico, restr_alim, restr_med, foto_url
     ];
     await client.query(pessoaQuery, pessoaValues);
 
     await client.query('INSERT INTO BENEFICIARIOS (cod_tib, numcad_pes) VALUES ($1, $2)', [tipo_beneficio, newNumCad]);
+
+    // Vínculos de Projetos (N:N) — estória: feedback do PO
+    if (Array.isArray(projetos)) {
+      for (const codProj of projetos) {
+        if (Number.isInteger(codProj)) {
+          await client.query(
+            'INSERT INTO BENEFICIARIO_PROJETOS (numcad_ben, cod_proj) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            [newNumCad, codProj]
+          );
+        }
+      }
+    }
 
     const inserirPessoaRelacionada = async (pessoa, tipo) => {
       const maxIdResult = await client.query('SELECT MAX(numcad_pes) as max_id FROM pessoas');
@@ -135,6 +159,20 @@ app.get('/api/beneficiarios', async (req, res) => {
       p.medicamento_pes AS "medicacao",
       p.profissao_pes AS "profissao",
       p.observacoes_pes AS "observacao",
+      p.bairro_pes AS "bairro",
+      p.contato_emg_pes AS "contatoEmg",
+      p.fone_emg_pes AS "foneEmg",
+      p.medico_pes AS "medico",
+      p.restr_alim_pes AS "restricaoAlimentar",
+      p.restr_med_pes AS "restricaoMedica",
+      p.foto_url_pes AS "fotoUrl",
+      COALESCE(
+        (SELECT json_agg(pr.nome_proj ORDER BY pr.nome_proj)
+           FROM BENEFICIARIO_PROJETOS bp
+           JOIN PROJETOS pr ON pr.cod_proj = bp.cod_proj
+          WHERE bp.numcad_ben = p.numcad_pes),
+        '[]'::json
+      ) AS "projetos",
       COALESCE(
         (SELECT json_agg(json_build_object(
             'nome', resp_p.nome_pes,

@@ -93,7 +93,10 @@ const ListaBeneficiarios = () => {
           <DetalheItem label="Religião" value={beneficiario.religiao} />
           <DetalheItem label="Fumante" value={beneficiario.fumante === '1' ? 'Sim' : 'Não'} />
           <DetalheItem label="Endereço" value={`${beneficiario.endereco || ''}, ${beneficiario.cidade || ''} - ${beneficiario.cep || ''}`} isFullWidth />
+          <DetalheItem label="Bairro" value={beneficiario.bairro} />
           <DetalheItem label="Email" value={beneficiario.email} isFullWidth />
+          <DetalheItem label="Contato de Emergência" value={beneficiario.contatoEmg} />
+          <DetalheItem label="Fone de Emergência" value={beneficiario.foneEmg} />
         </div>
       </div>
       <div className="detalhe-grupo">
@@ -108,14 +111,31 @@ const ListaBeneficiarios = () => {
         <div className="detalhes-grid">
           <DetalheItem label="Hospital" value={beneficiario.hospital} />
           <DetalheItem label="Matrícula" value={beneficiario.matriculaHospital} />
+          <DetalheItem label="Médico" value={beneficiario.medico} />
           <DetalheItem label="Patologia" value={beneficiario.patologia} isFullWidth />
           <DetalheItem label="Medicação" value={beneficiario.medicacao} isFullWidth />
+          <DetalheItem label="Restrição Alimentar" value={beneficiario.restricaoAlimentar} isFullWidth />
+          <DetalheItem label="Restrição Médica" value={beneficiario.restricaoMedica} isFullWidth />
         </div>
       </div>
       <div className="detalhe-grupo">
         <h4>Observações</h4>
         <p className="observacao-texto">{beneficiario.observacao || 'Nenhuma observação.'}</p>
       </div>
+
+      <div className="detalhe-grupo">
+        <h4>Projetos</h4>
+        {beneficiario.projetos && beneficiario.projetos.length > 0
+          ? <p>{beneficiario.projetos.join(', ')}</p>
+          : <p>Nenhum projeto vinculado.</p>}
+      </div>
+
+      {beneficiario.fotoUrl && (
+        <div className="detalhe-grupo">
+          <h4>Foto</h4>
+          <img src={beneficiario.fotoUrl} alt="Foto do beneficiário" style={{ maxWidth: '180px', borderRadius: '8px' }} />
+        </div>
+      )}
 
       <TabelaPessoasRelacionadas titulo="Responsáveis" pessoas={beneficiario.responsaveis} />
       <TabelaPessoasRelacionadas titulo="Composição Familiar" pessoas={beneficiario.familia} />
