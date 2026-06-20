@@ -3,6 +3,7 @@ const pool = require('./db');
 const cors = require('cors');
 const getLookupId = require('./utils/getLookupId');
 const servicosRoutes = require('./routes/servicos');
+const configuracoesRoutes = require('./routes/configuracoes');
 
 const app = express();
 
@@ -11,10 +12,13 @@ app.use(cors());
 
 // app.js é o servidor usado pelos testes (sem auth real do Supabase).
 // Injeta um usuário admin para que as rotas protegidas por requireAdmin sejam testáveis.
-app.use('/api/servicos-apoio', (req, res, next) => {
+const injectAdmin = (req, res, next) => {
   req.user = { id: 'test-admin', email: 'admin@test', cargo: 'admin' };
   next();
-}, servicosRoutes);
+};
+
+app.use('/api/servicos-apoio', injectAdmin, servicosRoutes);
+app.use('/api/config', injectAdmin, configuracoesRoutes);
 
 const createLookupEndpoint = (path, tableName, idColumn, nameColumn) => {
   app.get(path, async (req, res) => {

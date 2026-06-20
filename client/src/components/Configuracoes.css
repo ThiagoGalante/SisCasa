@@ -1,0 +1,105 @@
+.config-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.config-container .title {
+  margin-bottom: 4px;
+}
+
+.config-intro {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+.config-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-bottom: 2px solid #e0e0e0;
+  margin-bottom: 16px;
+}
+
+.config-tab {
+  border: none;
+  background: transparent;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #555;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+}
+
+.config-tab.ativa {
+  color: #2e7d52;
+  border-bottom-color: #2e7d52;
+  font-weight: 600;
+}
+
+.config-novo {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.config-novo input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.config-tabela {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.config-tabela th,
+.config-tabela td {
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.config-tabela th {
+  background: #f4f7f5;
+  color: #333;
+}
+
+.config-tabela input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.config-vazio {
+  text-align: center;
+  color: #6c757d;
+  padding: 20px;
+}
+
+.config-erro {
+  color: #d6336c;
+  margin-bottom: 12px;
+}
+
+.config-tabela .btn-edit,
+.config-tabela .btn-delete,
+.config-tabela .btn-add,
+.config-tabela .btn-clear {
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-right: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.config-tabela .btn-edit { background: #e7f1ec; color: #2e7d52; }
+.config-tabela .btn-delete { background: #fde2e8; color: #d6336c; }
+.config-tabela .btn-add { background: #2e7d52; color: #fff; }
+.config-tabela .btn-clear { background: #eee; color: #555; }

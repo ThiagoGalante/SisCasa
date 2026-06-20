@@ -6,6 +6,7 @@ const { authenticateToken, requireAdmin } = require('./middleware/auth');
 const authRoutes = require('./routes/auth');
 const doacoesRoutes = require('./routes/doacoes');
 const servicosRoutes = require('./routes/servicos');
+const configuracoesRoutes = require('./routes/configuracoes');
 
 const app = express();
 const port = 5000; // Porta que o servidor irá escutar
@@ -25,6 +26,9 @@ app.use('/api/doadores', authenticateToken, doacoesRoutes);
 
 // Rotas de serviços de apoio (atendimentos a beneficiários)
 app.use('/api/servicos-apoio', authenticateToken, servicosRoutes);
+
+// Rotas de Configurações — CRUD das tabelas de apoio (US14)
+app.use('/api/config', authenticateToken, configuracoesRoutes);
 
 console.log('Conectando ao banco de dados...');
 pool.connect((err) => {
