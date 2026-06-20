@@ -193,7 +193,7 @@ const ListaBeneficiarios = () => {
                   </button>
                   {cargo === 'admin' && (
                     <Link to={`/beneficiarios/editar/${beneficiario.id}`} className="acao-editar" onClick={(e) => e.stopPropagation()}>
-                      ✏️
+                      ✏️ Editar
                     </Link>
                   )}
                 </td>

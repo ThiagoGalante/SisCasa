@@ -77,3 +77,9 @@ form { display: flex; flex-direction: column; gap: 12px; width: 100%; }
   font-size: 0.8rem;
   margin-top: 4px;
 }
+
+/* Sprint 5 — US11/US12 */
+.campo-obrigatorio { color: #d6336c; font-weight: 700; }
+.secao-ajuda { color: #6c757d; font-size: 0.85rem; margin: 4px 0 10px; }
+.secao-contador { color: #6c757d; font-weight: 400; font-size: 0.9rem; }
+.projetos-chips .chip { font-size: 0.9rem; }

@@ -10,12 +10,47 @@ const FormularioBeneficiarios = () => {
   const navigate = useNavigate();
   const isEditing = !!id;
 
+  // Datas no padrão brasileiro dd/mm/aaaa em toda a interface.
+  // ISO (AAAA-MM-DD) é usado apenas para troca com o backend/banco.
+  const isoParaBR = (iso) => {
+    if (!iso) return "";
+    const [a, m, d] = String(iso).slice(0, 10).split("-");
+    return a && m && d ? `${d}/${m}/${a}` : "";
+  };
+  const brParaISO = (br) => {
+    if (!br) return null;
+    const m = String(br).match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    return m ? `${m[3]}-${m[2]}-${m[1]}` : null;
+  };
+  const REGEX_DATA_BR = /^\d{2}\/\d{2}\/\d{4}$/;
+
+  // Data de hoje em dd/mm/aaaa (horário local).
+  const hojeBR = (() => {
+    const d = new Date();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${dd}/${mm}/${d.getFullYear()}`;
+  })();
+
+  // Insere as barras automaticamente enquanto o usuário digita (dd/mm/aaaa).
+  const mascararData = (e) => {
+    const v = e.target.value.replace(/\D/g, "").slice(0, 8);
+    let out = v;
+    if (v.length > 4) out = `${v.slice(0, 2)}/${v.slice(2, 4)}/${v.slice(4)}`;
+    else if (v.length > 2) out = `${v.slice(0, 2)}/${v.slice(2)}`;
+    e.target.value = out;
+  };
+
   const { register, handleSubmit, control, reset, setValue, watch, formState: { errors } } = useForm({
     defaultValues: {
+      data_cad: hojeBR, // US11: já preenche com a data de hoje (editável)
       responsaveis: [{ nome: "", parentesco: "", endereco: "", fone: "" }],
       familia: [{ nome: "", parentesco: "", endereco: "", fone: "" }],
     },
   });
+
+  // US11: marcador visual de campo obrigatório.
+  const Obrigatorio = () => <span className="campo-obrigatorio" title="Campo obrigatório"> *</span>;
 
   const { fields: responsaveisFields, append: addResponsavel, remove: removeResponsavel } =
     useFieldArray({ control, name: "responsaveis" });
@@ -85,8 +120,8 @@ const FormularioBeneficiarios = () => {
 
           const formattedData = {
             ...data,
-            data_cad: data.data_cad ? new Date(data.data_cad).toISOString().split('T')[0] : '',
-            data_nasc: data.data_nasc ? new Date(data.data_nasc).toISOString().split('T')[0] : '',
+            data_cad: data.data_cad ? isoParaBR(new Date(data.data_cad).toISOString()) : '',
+            data_nasc: data.data_nasc ? isoParaBR(new Date(data.data_nasc).toISOString()) : '',
           };
 
           if (formattedData.uf) {
@@ -165,9 +200,13 @@ const FormularioBeneficiarios = () => {
       return;
     }
 
-    if (data.data_nasc) {
+    // Converte as datas exibidas em dd/mm/aaaa para ISO (AAAA-MM-DD) antes de enviar.
+    const dataCadISO = brParaISO(data.data_cad);
+    const dataNascISO = brParaISO(data.data_nasc);
+
+    if (dataNascISO) {
       const hoje = new Date();
-      const nascimento = new Date(data.data_nasc);
+      const nascimento = new Date(dataNascISO);
       let idade = hoje.getFullYear() - nascimento.getFullYear();
       const mes = hoje.getMonth() - nascimento.getMonth();
       if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
@@ -191,7 +230,7 @@ const FormularioBeneficiarios = () => {
     const method = isEditing ? "PUT" : "POST";
 
     try {
-      const payload = { ...data, projetos: projetosSel, foto_url: fotoUrl };
+      const payload = { ...data, data_cad: dataCadISO, data_nasc: dataNascISO, projetos: projetosSel, foto_url: fotoUrl };
       const res = await authenticatedFetch(url, {
         method,
         body: JSON.stringify(payload),
@@ -256,11 +295,20 @@ const FormularioBeneficiarios = () => {
           </div>
           <div className="form-field field-md">
             <label>Data Cad.</label>
-            <input type="date" {...register("data_cad", { required: "Data de cadastro é obrigatória." })} />
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="dd/mm/aaaa"
+              maxLength={10}
+              {...register("data_cad", {
+                pattern: { value: REGEX_DATA_BR, message: "Use o formato dd/mm/aaaa." },
+              })}
+              onInput={mascararData}
+            />
             <ErrorMessage field="data_cad" />
           </div>
           <div className="form-field field-md">
-            <label>Tipo de Benefício</label>
+            <label>Tipo de Benefício<Obrigatorio /></label>
             <select {...register("tipo_beneficio", { required: "Selecione um tipo de benefício." })}>
               <option value="">Selecione o tipo</option>
               {opcoes.tiposBeneficio.map((o) => (
@@ -275,13 +323,22 @@ const FormularioBeneficiarios = () => {
 
         <div className="form-row">
           <div className="form-field field-lg">
-            <label>Nome</label>
-            <input {...register("nome", { required: "N  ome é obrigatório." })} />
+            <label>Nome<Obrigatorio /></label>
+            <input {...register("nome", { required: "Nome é obrigatório." })} />
             <ErrorMessage field="nome" />
           </div>
           <div className="form-field field-md">
             <label>Data Nasc.</label>
-            <input type="date" {...register("data_nasc", { required: "Data de nascimento é obrigatória." })} />
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="dd/mm/aaaa"
+              maxLength={10}
+              {...register("data_nasc", {
+                pattern: { value: REGEX_DATA_BR, message: "Use o formato dd/mm/aaaa." },
+              })}
+              onInput={mascararData}
+            />
             <ErrorMessage field="data_nasc" />
           </div>
           <div className="form-field field-md">
@@ -458,27 +515,59 @@ const FormularioBeneficiarios = () => {
 
         <div className="section-table">
           <h3>Projetos</h3>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', padding: '8px 0' }}>
-            {opcoes.projetos.length === 0 && <p>Nenhum projeto cadastrado.</p>}
-            {opcoes.projetos.map((p) => (
-              <label key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <input
-                  type="checkbox"
-                  checked={projetosSel.includes(p.id)}
-                  onChange={(e) =>
-                    setProjetosSel((prev) =>
-                      e.target.checked ? [...prev, p.id] : prev.filter((x) => x !== p.id)
-                    )
+          {/* US11: seleção de projetos por menu suspenso (dropdown) + chips removíveis */}
+          <div className="form-row">
+            <div className="form-field field-lg">
+              <label>Adicionar projeto</label>
+              <select
+                value=""
+                onChange={(e) => {
+                  const id = Number(e.target.value);
+                  if (id && !projetosSel.includes(id)) {
+                    setProjetosSel((prev) => [...prev, id]);
                   }
-                />
-                {p.nome}
-              </label>
-            ))}
+                }}
+              >
+                <option value="">Selecione um projeto…</option>
+                {opcoes.projetos
+                  .filter((p) => !projetosSel.includes(p.id))
+                  .map((p) => (
+                    <option key={p.id} value={p.id}>{p.nome}</option>
+                  ))}
+              </select>
+            </div>
+          </div>
+          <div className="projetos-chips" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '8px 0' }}>
+            {projetosSel.length === 0 && <p style={{ color: '#6c757d' }}>Nenhum projeto selecionado.</p>}
+            {projetosSel.map((id) => {
+              const proj = opcoes.projetos.find((p) => p.id === id);
+              return (
+                <span
+                  key={id}
+                  className="chip"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#e7f1ec', border: '1px solid #bcd', borderRadius: '16px', padding: '4px 10px' }}
+                >
+                  {proj ? proj.nome : `Projeto ${id}`}
+                  <button
+                    type="button"
+                    onClick={() => setProjetosSel((prev) => prev.filter((x) => x !== id))}
+                    title="Remover projeto"
+                    style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 'bold' }}
+                  >
+                    ×
+                  </button>
+                </span>
+              );
+            })}
           </div>
         </div>
 
         <div className="section-table">
-          <h3>Responsáveis</h3>
+          <h3>Responsáveis <span className="secao-contador">({responsaveisFields.length})</span></h3>
+          <p className="secao-ajuda">
+            Pessoas legalmente responsáveis pelo beneficiário. Obrigatório ao menos um
+            responsável quando o beneficiário for menor de idade.
+          </p>
 
           <div className="table-header">
             <span className="col-nome">Nome</span>
@@ -519,7 +608,11 @@ const FormularioBeneficiarios = () => {
         </div>
 
         <div className="section-table secao-familiar">
-          <h3>Composição Familiar</h3>
+          <h3>Composição Familiar <span className="secao-contador">({familiaFields.length})</span></h3>
+          <p className="secao-ajuda">
+            Membros que compõem o núcleo familiar do beneficiário. Cada linha preenchida
+            deve ter, no mínimo, Nome e Grau de Parentesco.
+          </p>
 
           <div className="table-header">
             <span className="col-nome">Nome</span>
