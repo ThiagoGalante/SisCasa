@@ -2,6 +2,12 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import FormularioBeneficiarios from '../../components/FormularioBeneficiarios';
 
+// Stub dos hooks de roteamento (react-router-dom v7 não resolve sob o jest do CRA).
+jest.mock('react-router-dom', () => ({
+  useParams: () => ({}),
+  useNavigate: () => jest.fn(),
+}));
+
 describe('FormularioBeneficiarios', () => {
   beforeEach(() => {
     // Reset dos mocks
@@ -432,6 +438,67 @@ describe('FormularioBeneficiarios', () => {
         expect(nomeInput.value).toBe('');
       }
     }, { timeout: 3000 });
+  });
+});
+
+/**
+ * US11 — Datas no padrão brasileiro (dd/mm/aaaa) e marcação de obrigatórios
+ * conforme o Modelo de Dados (apenas NOME_PES e COD_TIB são NOT NULL no
+ * cadastro de beneficiários; DATACAD_PES e DATANASC_PES são opcionais).
+ */
+describe('FormularioBeneficiarios — datas dd/mm/aaaa e campos obrigatórios (US11)', () => {
+  beforeEach(() => {
+    global.fetch.mockClear();
+    global.alert.mockClear();
+    global.fetch.mockImplementation(() => Promise.resolve({ ok: true, json: async () => [] }));
+  });
+
+  const renderForm = async () => {
+    render(<FormularioBeneficiarios />);
+    await waitFor(() => {
+      expect(screen.getByText('Cadastrar Beneficiário')).toBeInTheDocument();
+    }, { timeout: 3000 });
+  };
+
+  test('CT-DATA-001: Data Cad. é pré-preenchida no formato dd/mm/aaaa', async () => {
+    await renderForm();
+    const dataCad = document.querySelector('input[name="data_cad"]');
+    expect(dataCad).toBeInTheDocument();
+    expect(dataCad.value).toMatch(/^\d{2}\/\d{2}\/\d{4}$/);
+  });
+
+  test('CT-DATA-002: campos de data usam texto com placeholder dd/mm/aaaa (não input nativo date)', async () => {
+    await renderForm();
+    const dataCad = document.querySelector('input[name="data_cad"]');
+    const dataNasc = document.querySelector('input[name="data_nasc"]');
+    expect(dataCad.getAttribute('type')).toBe('text');
+    expect(dataNasc.getAttribute('type')).toBe('text');
+    expect(dataCad.getAttribute('placeholder')).toBe('dd/mm/aaaa');
+    expect(dataNasc.getAttribute('placeholder')).toBe('dd/mm/aaaa');
+  });
+
+  test('CT-DATA-003: a máscara insere as barras automaticamente ao digitar', async () => {
+    await renderForm();
+    const dataNasc = document.querySelector('input[name="data_nasc"]');
+    fireEvent.input(dataNasc, { target: { value: '25122025' } });
+    expect(dataNasc.value).toBe('25/12/2025');
+  });
+
+  test('CT-OBR-001: apenas Nome e Tipo de Benefício são marcados como obrigatórios', async () => {
+    await renderForm();
+    // O componente Obrigatorio renderiza <span class="campo-obrigatorio"> em cada campo NOT NULL.
+    const obrigatorios = document.querySelectorAll('.campo-obrigatorio');
+    expect(obrigatorios).toHaveLength(2);
+
+    const labels = Array.from(document.querySelectorAll('label'));
+    const temAsterisco = (texto) =>
+      labels.find((l) => l.textContent.includes(texto))?.querySelector('.campo-obrigatorio') != null;
+
+    expect(temAsterisco('Nome')).toBe(true);
+    expect(temAsterisco('Tipo de Benefício')).toBe(true);
+    // Conforme o Modelo de Dados, estes NÃO são obrigatórios:
+    expect(temAsterisco('Data Cad.')).toBe(false);
+    expect(temAsterisco('Data Nasc.')).toBe(false);
   });
 });
 

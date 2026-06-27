@@ -18,6 +18,7 @@ import FormularioUsuario from './components/FormularioUsuario';
 import PaginaInicial from './components/PaginaInicial';
 import ServicosApoio from './components/ServicosApoio';
 import FormularioServicoApoio from './components/FormularioServicoApoio';
+import Configuracoes from './components/Configuracoes';
 
 function App() {
   return (
@@ -52,6 +53,7 @@ function App() {
                       <Route path="/usuarios" element={<GerenciarUsuarios />} />
                       <Route path="/usuarios/cadastro" element={<FormularioUsuario />} />
                       <Route path="/usuarios/editar/:id" element={<FormularioUsuario />} />
+                      <Route path="/configuracoes" element={<Configuracoes />} />
                       <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                   </div>

@@ -18,6 +18,7 @@ const Modulo = () => {
     { id: 6, nome: "👥 Beneficiários",     link: "/beneficiarios" },
     { id: 7, nome: "📊 Relatórios",        link: "/relatorios" },
     { id: 8, nome: "⚙️ Usuários",          link: "/usuarios", adminOnly: true },
+    { id: 9, nome: "🛠️ Configurações",      link: "/configuracoes", adminOnly: true },
   ];
 
   const handleLogout = async () => {
